@@ -2,6 +2,7 @@
 
 NexusERP is a comprehensive, production-ready Enterprise Resource Planning (ERP) system built with Django. It features a complete Multi-Tenant SaaS architecture, Double-Entry Accounting, Background Task Queues, and a secure RESTful API.
 
+
 ## 🚀 Core Architecture & Features
 
 ### 1. Multi-Tenant SaaS Engine (Row-Level Security)
@@ -36,7 +37,52 @@ Built to host hundreds of isolated companies within a single database instance.
 * **Frontend:** TailwindCSS, Alpine.js, FontAwesome
 * **Reporting:** xhtml2pdf, CSV exporters
 
+## ⚙️ Local Development Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/yourusername/NexusERP.git](https://github.com/amirhosseinse7/NexusERP.git)
+   cd NexusERP
+
+    Set up the virtual environment:
+    Bash
+
+    python -m venv venv
+    source venv/Scripts/activate # Windows: venv\Scripts\activate
+
+    Install dependencies:
+    Bash
+
+    pip install -r requirements.txt
+
+    Environment Variables:
+    Create a .env file in the root directory and add your secret key:
+    Code snippet
+
+    SECRET_KEY=your_secret_key_here
+    DEBUG=True
+
+    Run Migrations & Start the Server:
+    Bash
+
+    python manage.py migrate
+    python manage.py runserver
+
+    Start the Celery Worker (Requires Redis):
+    Bash
+
+    celery -A config worker -l info -P eventlet
+
+🔐 System Access (SaaS Admin)
+
+To access the SaaS Super-Admin panel and provision your first workspace, create a global superuser:
+Bash
+
+python manage.py createsuperuser
+
+Log in at http://127.0.0.1:8000/saas/ to launch a new tenant.
+
+
 ⚖️ License & Copyright
 
-Copyright © 2026. All Rights Reserved.
-This repository is provided for portfolio and demonstration purposes only. No license is granted to copy, modify, distribute, or use this software for commercial or non-commercial purposes without explicit written permission.
+Copyright © 2026. All Rights Reserved. This repository is provided for portfolio and demonstration purposes only. No license is granted to copy, modify, distribute, or use this software for commercial or non-commercial purposes without explicit written permission.
