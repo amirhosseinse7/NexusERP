@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block page_title %}Employee Directory{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h2 class="font-bold text-gray-700">Team Directory</h2>
+        <a href="{% url 'employee_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+            <i class="fa-solid fa-user-plus mr-2"></i> Hire Employee
+        </a>
+    </div>
+    <table class="w-full text-left text-sm text-gray-600">
+        <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-700">
+            <tr>
+                <th class="p-4">EMP ID</th>
+                <th class="p-4">Name</th>
+                <th class="p-4">Department & Role</th>
+                <th class="p-4">Manager</th>
+                <th class="p-4 text-center">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for emp in employees %}
+            <tr onclick="window.location='{% url 'employee_detail' emp.emp_id %}'" class="hover:bg-gray-50 transition cursor-pointer">
+                <td class="p-4 font-mono font-bold text-blue-600">{{ emp.emp_id }}</td>
+                <td class="p-4 font-bold text-gray-900">{{ emp.full_name }}</td>
+                <td class="p-4">
+                    <span class="block text-gray-800">{{ emp.position.title|default:"No Role" }}</span>
+                    <span class="text-xs text-gray-500">{{ emp.department.name|default:"No Dept" }}</span>
+                </td>
+                <td class="p-4 text-gray-500">{{ emp.manager.full_name|default:"-" }}</td>
+                <td class="p-4 text-center">
+                    {% if emp.is_active %}
+                        <span class="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-800">ACTIVE</span>
+                    {% else %}
+                        <span class="px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-800">INACTIVE</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="p-8 text-center text-gray-400">No employees found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

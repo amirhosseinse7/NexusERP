@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block page_title %}Time Off Requests{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    
+    {% if messages %}
+    <div class="p-4 bg-gray-50 border-b border-gray-100">
+        {% for message in messages %}
+        <div class="p-3 rounded-lg font-bold text-sm shadow-sm flex items-center
+            {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+            {% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-check{% endif %} mr-2 text-lg"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h2 class="font-bold text-gray-700">Leave Management</h2>
+        <a href="{% url 'time_off_request' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+            <i class="fa-solid fa-plane-departure mr-2"></i> Request Time Off
+        </a>
+    </div>
+    
+    <table class="w-full text-left text-sm text-gray-600">
+        <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-700">
+            <tr>
+                <th class="p-4">Employee</th>
+                <th class="p-4">Leave Type</th>
+                <th class="p-4">Dates</th>
+                <th class="p-4 text-center">Duration</th>
+                <th class="p-4 text-center">Status</th>
+                <th class="p-4 text-right">Manager Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for req in requests %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="p-4 font-bold text-gray-900">
+                    {{ req.employee.full_name }}
+                    <span class="block text-xs text-gray-400 font-normal">{{ req.employee.department.name|default:"-" }}</span>
+                </td>
+                <td class="p-4 text-blue-600 font-medium">{{ req.leave_type.name }}</td>
+                <td class="p-4 text-gray-600">{{ req.start_date|date:"M d" }} to {{ req.end_date|date:"M d, Y" }}</td>
+                <td class="p-4 text-center font-bold">{{ req.duration_days }} Days</td>
+                <td class="p-4 text-center">
+                    {% if req.state == 'draft' %}<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">DRAFT</span>
+                    {% elif req.state == 'submitted' %}<span class="px-2 py-1 rounded text-xs font-bold bg-orange-100 text-orange-800">PENDING</span>
+                    {% elif req.state == 'approved' %}<span class="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-800">APPROVED</span>
+                    {% elif req.state == 'rejected' %}<span class="px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-800">REJECTED</span>{% endif %}
+                </td>
+                <td class="p-4 text-right">
+                    {% if req.state == 'submitted' %}
+                        
+                        {% if request.user.is_superuser or request.user.employee_profile == req.employee.manager %}
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'time_off_action' req.req_id 'approve' %}" class="text-green-700 hover:text-white hover:bg-green-600 font-bold bg-green-50 border border-green-200 px-3 py-1 rounded transition text-xs">Approve</a>
+                                <a href="{% url 'time_off_action' req.req_id 'reject' %}" class="text-red-700 hover:text-white hover:bg-red-600 font-bold bg-red-50 border border-red-200 px-3 py-1 rounded transition text-xs">Reject</a>
+                            </div>
+                        {% else %}
+                            <span class="text-gray-400 text-xs italic">Awaiting Manager</span>
+                        {% endif %}
+
+                    {% else %}
+                        <span class="text-gray-300 text-xs font-bold uppercase"><i class="fa-solid fa-lock mr-1"></i> Processed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="p-8 text-center text-gray-400">No time off requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

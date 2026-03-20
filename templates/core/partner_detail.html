@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block page_title %}Partner: {{ partner.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <div>
+        <a href="{% url 'partner_list' %}" class="text-gray-500 hover:text-blue-600 font-medium transition flex items-center w-fit">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Partners
+        </a>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center space-x-4">
+            <h2 class="text-2xl font-bold text-gray-800">{{ partner.name }}</h2>
+            <div class="space-x-2">
+                {% if partner.is_customer %}<span class="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full uppercase font-bold">Customer</span>{% endif %}
+                {% if partner.is_supplier %}<span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full uppercase font-bold">Supplier</span>{% endif %}
+            </div>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'partner_specific_csv' partner.partner_id %}" class="bg-white border border-green-200 text-green-700 hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+                <i class="fa-solid fa-file-csv mr-2"></i> Export History
+            </a>
+            <button onclick="window.print()" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+                <i class="fa-solid fa-print mr-2"></i> Print Report
+            </button>
+            <a href="{% url 'partner_edit' partner.partner_id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+                <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Details
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Contact Information</h3>
+            <dl class="space-y-4 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Partner ID</dt>
+                    <dd class="font-mono text-blue-600 font-bold">{{ partner.partner_id }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Email</dt>
+                    <dd class="font-medium">{{ partner.email|default:"-" }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Phone</dt>
+                    <dd class="font-medium">{{ partner.phone|default:"-" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500 mb-1">Address</dt>
+                    <dd class="font-medium bg-gray-50 p-3 rounded border border-gray-100">
+                        {{ partner.address|default:"No address provided." }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Commercial Settings</h3>
+            <dl class="space-y-4 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Pricelist Assigned</dt>
+                    <dd class="font-bold {% if partner.pricelist %}text-blue-600{% else %}text-gray-400{% endif %}">
+                        {{ partner.pricelist.name|default:"Standard Price" }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    {% if partner.is_customer %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center">
+            <i class="fa-solid fa-cart-arrow-down mr-3 text-blue-500"></i>
+            <h3 class="font-bold text-gray-700">Sales Order History</h3>
+        </div>
+        <table class="w-full text-left text-sm text-gray-600">
+            <thead class="bg-white text-xs uppercase font-semibold text-gray-500 border-b">
+                <tr>
+                    <th class="p-4">Reference</th>
+                    <th class="p-4">Date</th>
+                    <th class="p-4 text-center">Items</th>
+                    <th class="p-4 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for so in sales_orders %}
+                <tr onclick="window.location='{% url 'so_detail' so.so_id %}'" class="hover:bg-gray-50 transition cursor-pointer">
+                    <td class="p-4 font-mono text-blue-600 font-bold">{{ so.so_id }}</td>
+                    <td class="p-4">{{ so.date_order|date:"M d, Y" }}</td>
+                    <td class="p-4 text-center font-medium">{{ so.lines.count }}</td>
+                    <td class="p-4 text-center">
+                        {% if so.state == 'draft' %}<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">DRAFT</span>
+                        {% elif so.state == 'confirmed' %}<span class="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800">CONFIRMED</span>
+                        {% elif so.state == 'shipped' %}<span class="px-2 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800">SHIPPED</span>
+                        {% elif so.state == 'returned' %}<span class="px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-800">RETURNED</span>
+                        {% else %}<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-800">{{ so.state|upper }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-6 text-center text-gray-400">No sales history found for this customer.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if partner.is_supplier %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center">
+            <i class="fa-solid fa-truck-ramp-box mr-3 text-purple-500"></i>
+            <h3 class="font-bold text-gray-700">Purchase Order History</h3>
+        </div>
+        <table class="w-full text-left text-sm text-gray-600">
+            <thead class="bg-white text-xs uppercase font-semibold text-gray-500 border-b">
+                <tr>
+                    <th class="p-4">Reference</th>
+                    <th class="p-4">Date</th>
+                    <th class="p-4 text-center">Items</th>
+                    <th class="p-4 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for po in purchase_orders %}
+                <tr onclick="window.location='{% url 'po_detail' po.po_id %}'" class="hover:bg-gray-50 transition cursor-pointer">
+                    <td class="p-4 font-mono text-purple-600 font-bold">{{ po.po_id }}</td>
+                    <td class="p-4">{{ po.date_order|date:"M d, Y" }}</td>
+                    <td class="p-4 text-center font-medium">{{ po.lines.count }}</td>
+                    <td class="p-4 text-center">
+                        {% if po.state == 'draft' %}<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">DRAFT</span>
+                        {% elif po.state == 'sent' %}<span class="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800">WAITING</span>
+                        {% elif po.state == 'received' %}<span class="px-2 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800">RECEIVED</span>
+                        {% else %}<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-800">{{ po.state|upper }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-6 text-center text-gray-400">No purchase history found for this supplier.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

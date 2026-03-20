@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Logistics Overview{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">🚚 Outbound Shipments</h2>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Run ID</th>
+                        <th>Warehouse</th>
+                        <th>Vehicle</th>
+                        <th>Distance</th>
+                        <th>Est. Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ship in shipments %}
+                    <tr>
+                        <td>{{ ship.ship_date }}</td>
+                        <td>{{ ship.run_id }}</td>
+                        <td>{{ ship.warehouse.name }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ ship.delivery_mode.mode_id }}</span>
+                        </td>
+                        <td>{{ ship.distance_km }} km</td>
+                        <td>£{{ ship.transport_cost_gbp_est }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

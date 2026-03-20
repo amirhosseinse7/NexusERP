@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block page_title %}Bill of Materials{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <form method="GET" class="flex w-full md:w-auto gap-2">
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+            <div class="relative flex-grow md:w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </div>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search ID or Product..." 
+                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition border border-gray-200 shadow-sm">
+                Filter
+            </button>
+            {% if query %}
+                <a href="{% url 'bom_list' %}" class="flex items-center text-red-500 hover:text-red-700 text-sm font-medium ml-2">Clear</a>
+            {% endif %}
+        </form>
+
+        {% if perms.mrp.add_billofmaterial %}
+        <a href="{% url 'bom_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i> Create Recipe
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b">
+                <tr>
+                    <th class="px-6 py-4 hover:bg-gray-100 transition">
+                        <a href="?sort={% if sort_by == 'bom_id' %}-bom_id{% else %}bom_id{% endif %}&q={{ query|urlencode }}" class="flex items-center group">
+                            Reference <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                        </a>
+                    </th>
+                    <th class="px-6 py-4 hover:bg-gray-100 transition">
+                        <a href="?sort={% if sort_by == 'product__name' %}-product__name{% else %}product__name{% endif %}&q={{ query|urlencode }}" class="flex items-center group">
+                            Finished Product <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                        </a>
+                    </th>
+                    <th class="px-6 py-4 text-right hover:bg-gray-100 transition">
+                        <a href="?sort={% if sort_by == 'quantity' %}-quantity{% else %}quantity{% endif %}&q={{ query|urlencode }}" class="flex items-center justify-end group">
+                            Base Quantity <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                        </a>
+                    </th>
+                    <th class="px-6 py-4"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for bom in boms %}
+                <tr onclick="window.location='{% url 'bom_detail' bom.bom_id %}'" class="hover:bg-gray-50 transition cursor-pointer group">
+                    <td class="px-6 py-4 font-mono text-blue-600 font-bold">{{ bom.bom_id }}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900">{{ bom.product.name }}</td>
+                    <td class="px-6 py-4 text-right font-medium">{{ bom.quantity|floatformat:2 }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-400 transition"></i>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-8 text-center text-gray-400">No recipes found matching criteria.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center text-sm">
+            <span class="text-gray-500">Showing {{ boms.start_index|default:0 }} to {{ boms.end_index|default:0 }} of {{ boms.paginator.count }}</span>
+            <div class="flex space-x-2">
+                {% if boms.has_previous %}
+                    <a href="?page={{ boms.previous_page_number }}&q={{ query|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg">Previous</a>
+                {% endif %}
+                {% if boms.has_next %}
+                    <a href="?page={{ boms.next_page_number }}&q={{ query|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

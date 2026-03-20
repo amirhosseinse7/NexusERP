@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block page_title %}HR Master Data{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Organization Setup</h2>
+    <p class="text-sm text-gray-500 mt-1">Configure your company's departments, job roles, and leave policies here.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-building text-blue-500 mr-2"></i>Departments</h3>
+        <ul class="space-y-2 mb-6 text-sm">
+            {% for dept in departments %}
+            <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                <span class="font-medium text-gray-700">{{ dept.name }}</span>
+                <span class="text-xs text-gray-400">Mgr: {{ dept.manager.full_name|default:"None" }}</span>
+            </li>
+            {% empty %}
+            <li class="text-gray-400 text-center py-2">No departments yet.</li>
+            {% endfor %}
+        </ul>
+        <form method="post" class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+            {% csrf_token %}
+            <p class="text-xs font-bold text-gray-500 uppercase">Add Department</p>
+            {{ dept_form.name }}
+            {{ dept_form.manager }}
+            <button type="submit" name="add_dept" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 rounded transition">Save</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-briefcase text-purple-500 mr-2"></i>Job Positions</h3>
+        <ul class="space-y-2 mb-6 text-sm max-h-48 overflow-y-auto">
+            {% for pos in positions %}
+            <li class="flex flex-col p-2 hover:bg-gray-50 rounded border-b border-gray-50 last:border-0">
+                <span class="font-medium text-gray-700">{{ pos.title }}</span>
+                <span class="text-xs text-blue-600">{{ pos.department.name }}</span>
+            </li>
+            {% empty %}
+            <li class="text-gray-400 text-center py-2">No positions yet.</li>
+            {% endfor %}
+        </ul>
+        <form method="post" class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+            {% csrf_token %}
+            <p class="text-xs font-bold text-gray-500 uppercase">Add Position</p>
+            {{ pos_form.title }}
+            {{ pos_form.department }}
+            <button type="submit" name="add_pos" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded transition">Save</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-umbrella-beach text-orange-500 mr-2"></i>Leave Policies</h3>
+        <ul class="space-y-2 mb-6 text-sm">
+            {% for leave in leave_types %}
+            <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                <span class="font-medium text-gray-700">{{ leave.name }}</span>
+                <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-1 rounded">{{ leave.days_allowed_per_year }} Days</span>
+            </li>
+            {% empty %}
+            <li class="text-gray-400 text-center py-2">No policies yet.</li>
+            {% endfor %}
+        </ul>
+        <form method="post" class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+            {% csrf_token %}
+            <p class="text-xs font-bold text-gray-500 uppercase">Add Policy</p>
+            {{ leave_form.name }}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">Days/Yr:</span>
+                {{ leave_form.days_allowed_per_year }}
+            </div>
+            <button type="submit" name="add_leave" class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 rounded transition">Save</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

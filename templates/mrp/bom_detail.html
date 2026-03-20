@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block page_title %}Recipe: {{ bom.product.name }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="mb-4">
+        <a href="{% url 'bom_list' %}" class="text-gray-500 hover:text-blue-600 transition font-medium text-sm flex items-center w-fit">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Bill of Materials
+        </a>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Recipe: {{ bom.product.name }}</h2>
+            <p class="text-gray-500 mt-1 font-mono text-sm">{{ bom.bom_id }} &bull; Produces: {{ bom.quantity }} units</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Components (Raw Materials)</h3>
+        
+        <table class="w-full text-left text-sm mb-6">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
+                <tr>
+                    <th class="p-3 rounded-l-lg">Material</th>
+                    <th class="p-3 text-right rounded-r-lg">Quantity Required</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                {% for comp in bom.components.all %}
+                <tr>
+                    <td class="py-3 px-3 font-medium text-gray-800">{{ comp.component.name }}</td>
+                    <td class="py-3 px-3 text-right font-bold">{{ comp.quantity|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="py-4 text-center text-gray-400">No components added yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <h4 class="font-bold text-gray-700 text-sm mb-3">Add Ingredient</h4>
+            <form method="post" class="flex items-end gap-4">
+                {% csrf_token %}
+                <div class="flex-grow">
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Material</label>
+                    {{ form.component }}
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Qty</label>
+                    {{ form.quantity }}
+                </div>
+                <button type="submit" name="add_component" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                    Add
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

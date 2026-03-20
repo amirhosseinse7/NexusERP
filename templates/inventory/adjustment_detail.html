@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block page_title %}Audit: {{ adjustment.ref }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xl">
+                <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Inventory Audit</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Location: <span class="font-medium text-gray-700">{{ adjustment.location.name }}</span> 
+                    <span class="mx-2">|</span> 
+                    Ref: <span class="font-mono">{{ adjustment.ref }}</span>
+                </p>
+            </div>
+        </div>
+        <div>
+            {% if adjustment.state == 'draft' %}
+                <span class="bg-yellow-100 text-yellow-800 px-4 py-1.5 rounded-full text-sm font-bold border border-yellow-200">Draft</span>
+            {% else %}
+                <span class="bg-green-100 text-green-800 px-4 py-1.5 rounded-full text-sm font-bold border border-green-200">Applied</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Counted Products</h3>
+                </div>
+
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b">
+                        <tr>
+                            <th class="px-6 py-3">Product</th>
+                            <th class="px-6 py-3 text-right">Actual Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for line in adjustment.lines.all %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900">{{ line.material.name }}</div>
+                                <div class="text-xs text-gray-500">{{ line.material.sku }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold text-blue-600 text-lg">
+                                {{ line.counted_qty|floatformat:0 }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="p-12 text-center text-gray-400">
+                                <i class="fa-solid fa-barcode text-4xl mb-3 text-gray-300"></i>
+                                <p>No products added to this audit yet.</p>
+                                <p class="text-xs mt-1">Use the form to record physical counts.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            
+            {% if adjustment.state == 'draft' %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Record Count</h3>
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product</label>
+                        {{ line_form.material }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quantity on Shelf</label>
+                        {{ line_form.counted_qty }}
+                    </div>
+                    <button type="submit" name="add_line" class="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-lg font-medium transition shadow-sm">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Item
+                    </button>
+                </form>
+            </div>
+
+            {% if adjustment.lines.exists %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 bg-blue-50 border-blue-100">
+                <h3 class="font-bold text-gray-800 mb-2">Finish Audit</h3>
+                <p class="text-xs text-gray-600 mb-4">Applying this audit will immediately update your inventory levels and create Journal Entries for any lost or found items.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="confirm_adjustment" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-bold shadow-sm transition flex items-center justify-center">
+                        <i class="fa-solid fa-check-double mr-2"></i> Apply Adjustments
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                <div class="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-lock text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800 text-lg">Audit Applied</h3>
+                <p class="text-sm text-gray-500 mt-2">This inventory count has been finalized and applied to your stock. No further edits can be made.</p>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

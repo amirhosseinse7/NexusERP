@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block page_title %}Executive Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <div class="flex justify-between items-end">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Welcome back, {{ request.user.first_name|default:request.user.username }}</h2>
+            <p class="text-gray-500 text-sm mt-1">Here is what is happening across your business today.</p>
+        </div>
+        
+        {% if perms.finance.view_invoice %}
+        <div class="text-right">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
+            <p class="text-3xl font-bold text-green-600">${{ total_revenue|floatformat:2 }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        {% if perms.crm.view_opportunity %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 border-l-4 border-l-blue-500">
+            <div class="bg-blue-50 p-3 rounded-lg text-blue-600"><i class="fa-solid fa-funnel-dollar text-xl"></i></div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Active Pipeline</p>
+                <p class="text-xl font-bold text-gray-800">${{ pipeline_value|floatformat:2 }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if perms.finance.view_invoice %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 border-l-4 border-l-orange-500">
+            <div class="bg-orange-50 p-3 rounded-lg text-orange-600"><i class="fa-solid fa-file-invoice-dollar text-xl"></i></div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Unpaid Invoices</p>
+                <p class="text-xl font-bold text-gray-800">{{ unpaid_invoices_count }} <span class="text-sm font-normal text-gray-500">Awaiting</span></p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if perms.logistics.view_salesorder %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 border-l-4 border-l-purple-500">
+            <div class="bg-purple-50 p-3 rounded-lg text-purple-600"><i class="fa-solid fa-truck-fast text-xl"></i></div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Open Orders</p>
+                <p class="text-xl font-bold text-gray-800">{{ open_sales }} <span class="text-sm font-normal text-gray-500">To Ship</span></p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if perms.hr.view_employee %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 border-l-4 border-l-green-500">
+            <div class="bg-green-50 p-3 rounded-lg text-green-600"><i class="fa-solid fa-users text-xl"></i></div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Active Team</p>
+                <p class="text-xl font-bold text-gray-800">{{ active_employees }} <span class="text-sm font-normal text-gray-500">Emp.</span></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+            <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">Operations Alerts</h3>
+            
+            {% if perms.logistics.view_purchaseorder %}
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-sm font-medium text-gray-700"><i class="fa-solid fa-cart-shopping text-gray-400 mr-2"></i> Open Purchase Orders</span>
+                <span class="font-bold text-gray-900">{{ open_purchases }}</span>
+            </div>
+            {% endif %}
+            
+            {% if perms.mrp.view_manufacturingorder %}
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-sm font-medium text-gray-700"><i class="fa-solid fa-hammer text-gray-400 mr-2"></i> Active Manufacturing</span>
+                <span class="font-bold text-gray-900">{{ active_manufacturing }}</span>
+            </div>
+            {% endif %}
+            
+            {% if perms.hr.view_timeoffrequest %}
+            <div class="flex justify-between items-center p-3 {% if pending_time_off > 0 %}bg-orange-50 border border-orange-100{% else %}bg-gray-50{% endif %} rounded-lg">
+                <span class="text-sm font-medium text-gray-700"><i class="fa-solid fa-calendar-day text-gray-400 mr-2"></i> Pending Leave Requests</span>
+                <span class="font-bold {% if pending_time_off > 0 %}text-orange-600{% else %}text-gray-900{% endif %}">{{ pending_time_off }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if perms.crm.view_opportunity %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <h3 class="font-bold text-gray-800">Recent CRM Leads</h3>
+                <a href="{% url 'opportunity_board' %}" class="text-xs font-bold text-blue-600 hover:text-blue-800">View Pipeline &rarr;</a>
+            </div>
+            <div class="space-y-3">
+                {% for opp in recent_opportunities %}
+                <div class="flex justify-between items-center">
+                    <div>
+                        <a href="{% url 'opportunity_detail' opp.opp_id %}" class="text-sm font-bold text-gray-800 hover:text-blue-600 transition">{{ opp.title }}</a>
+                        <p class="text-xs text-gray-500">{{ opp.customer.name }} &bull; {{ opp.probability }}% Win Rate</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold text-green-600">${{ opp.expected_revenue|floatformat:2 }}</p>
+                        {% if opp.state == 'new' %}<span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded">NEW</span>
+                        {% elif opp.state == 'qualified' %}<span class="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded">QUALIFIED</span>
+                        {% elif opp.state == 'won' %}<span class="text-[10px] font-bold px-2 py-0.5 bg-green-100 text-green-800 rounded">WON</span>{% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-400 italic">No recent opportunities.</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

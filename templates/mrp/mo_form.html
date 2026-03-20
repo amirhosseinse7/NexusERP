@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">{{ title }}</h2>
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Product to Build</label>
+            {{ form.product }}
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Bill of Material (Recipe)</label>
+            {{ form.bom }}
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Quantity to Produce</label>
+            {{ form.qty_to_produce }}
+        </div>
+        <div class="pt-4 border-t border-gray-100">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition">
+                Create Order
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

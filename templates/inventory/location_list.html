@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block page_title %}Warehouse Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <div class="flex justify-end">
+        <a href="{% url 'location_create' %}" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm">
+            <i class="fa-solid fa-plus mr-2"></i> Add Warehouse
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for loc in locations %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">{{ loc.name }}</h3>
+                        <span class="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">{{ loc.location_id }}</span>
+                    </div>
+                    <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <i class="fa-solid fa-warehouse"></i>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Total Items</p>
+                        <p class="text-xl font-bold text-gray-800">{{ loc.total_qty|floatformat:0 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Stock Value</p>
+                        <p class="text-xl font-bold text-green-600">${{ loc.total_value|floatformat:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-between items-center">
+                <span class="text-xs text-green-600 flex items-center">
+                    <span class="h-2 w-2 rounded-full bg-green-500 mr-2"></span> Active
+                </span>
+                <a href="{% url 'location_detail' loc.location_id %}" class="text-blue-600 text-sm font-medium hover:text-blue-800">Details &rarr;</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+            <i class="fa-solid fa-warehouse text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">No warehouses configured.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

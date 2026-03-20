@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ opp.opp_id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="mb-4">
+        <a href="{% url 'opportunity_board' %}" class="text-gray-500 hover:text-blue-600 transition font-medium text-sm flex items-center w-fit">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to CRM Pipeline
+        </a>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex flex-col">
+            <div class="flex items-center space-x-3 mb-1">
+                <h2 class="text-2xl font-bold text-gray-800">{{ opp.title }}</h2>
+                
+                {% if opp.state == 'new' %}<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-bold uppercase border border-gray-200">New Lead</span>
+                {% elif opp.state == 'qualified' %}<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-bold uppercase border border-blue-200">Qualified</span>
+                {% elif opp.state == 'won' %}<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-bold uppercase border border-green-200">Won</span>
+                {% elif opp.state == 'lost' %}<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded font-bold uppercase border border-red-200">Lost</span>
+                {% endif %}
+            </div>
+            <p class="text-gray-500 font-medium"><i class="fa-solid fa-building mr-1"></i> {{ opp.customer.name }}</p>
+        </div>
+        
+        <div>
+            {% if opp.state == 'won' and not opp.sales_order %}
+            <form method="post" class="m-0">
+                {% csrf_token %}
+                <button type="submit" name="convert_to_so" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-sm transition animate-pulse">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Convert to Sales Order
+                </button>
+            </form>
+            {% elif opp.sales_order %}
+            <a href="{% url 'so_detail' opp.sales_order.so_id %}" class="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 px-6 py-2 rounded-lg font-bold shadow-sm transition">
+                <i class="fa-solid fa-file-invoice mr-2"></i> View Order {{ opp.sales_order.so_id }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Proposed Products</h3>
+                
+                <table class="w-full text-left text-sm mb-6">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
+                        <tr>
+                            <th class="p-3 rounded-l-lg">Product</th>
+                            <th class="p-3 text-right">Qty</th>
+                            <th class="p-3 text-right">Unit Price</th>
+                            <th class="p-3 text-right rounded-r-lg">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        {% for line in opp.lines.all %}
+                        <tr>
+                            <td class="py-3 px-3 font-medium text-gray-800">{{ line.material.name }}</td>
+                            <td class="py-3 px-3 text-right">{{ line.quantity|floatformat:0 }}</td>
+                            <td class="py-3 px-3 text-right">${{ line.price_unit|floatformat:2 }}</td>
+                            <td class="py-3 px-3 text-right font-bold text-gray-900">${{ line.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="py-4 text-center text-gray-400">No products added yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if opp.state == 'new' or opp.state == 'qualified' %}
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mt-4">
+                    <form method="post" class="flex items-end gap-4">
+                        {% csrf_token %}
+                        <div class="flex-grow">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Select Product</label>
+                            {{ line_form.material }}
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Qty</label>
+                            {{ line_form.quantity }}
+                        </div>
+                        <button type="submit" name="add_line" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                            Add
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Opportunity Overview</h3>
+                <dl class="space-y-4 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Created On</dt>
+                        <dd class="font-medium">{{ opp.date_created|date:"M d, Y" }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center border-t pt-3 mt-3">
+                        <dt class="text-gray-600 font-bold">Expected Revenue</dt>
+                        <dd class="font-bold text-green-600 text-lg">${{ opp.expected_revenue|floatformat:2 }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <dt class="text-gray-600 font-bold">Win Probability</dt>
+                        <dd class="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ opp.probability }}%</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Stage Management</h3>
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <select name="state" class="w-full border-gray-300 rounded-lg p-2 text-sm font-medium focus:ring-blue-500">
+                            <option value="new" {% if opp.state == 'new' %}selected{% endif %}>New Lead</option>
+                            <option value="qualified" {% if opp.state == 'qualified' %}selected{% endif %}>Qualified</option>
+                            <option value="won" {% if opp.state == 'won' %}selected{% endif %}>Won</option>
+                            <option value="lost" {% if opp.state == 'lost' %}selected{% endif %}>Lost</option>
+                        </select>
+                    </div>
+                    <button type="submit" name="change_state" class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-lg font-bold shadow-sm transition">
+                        Update Pipeline Stage
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

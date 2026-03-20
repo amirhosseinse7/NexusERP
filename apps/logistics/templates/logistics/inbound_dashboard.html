@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Inbound Logistics{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">📥 Inbound Logistics <small class="text-muted">(Goods Receipt)</small></h2>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Inbound ID</th>
+                        <th>Material</th>
+                        <th>Qty</th>
+                        <th>Supplier</th>
+                        <th>ETA</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in incoming %}
+                    <tr>
+                        <td>{{ item.order_id }}</td>
+                        <td>{{ item.material.material_name }}</td>
+                        <td class="fw-bold text-primary">{{ item.qty_units }}</td>
+                        <td>{{ item.purchase_order.supplier.name }}</td>
+                        <td>{{ item.expected_delivery_date }}</td>
+                        <td>
+                            <a href="{% url 'receive_goods' item.order_id %}" class="btn btn-sm btn-success">
+                                📥 Receive Stock
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            No incoming shipments. Approve a PO in Admin to start.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

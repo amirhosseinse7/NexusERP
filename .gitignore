@@ -1,0 +1,38 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Security & Environment Variables
+.env
+.env.local
+
+# Database 
+db.sqlite3
+*.sqlite3
+
+# Celery & Media
+celerybeat-schedule
+*.pid
+media/
+static/
+
+# OS and Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Data and Simulation Scripts (Local only)
+data/
+data_simulation/
+no_worries/
+simulate_*.py
+seed_*.py
+setup_*.py
+generate_*.py
+import_*.py

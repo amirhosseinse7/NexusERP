@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .label-container {
+            width: 300px;
+            height: 180px;
+            border: 2px solid #000;
+            padding: 15px;
+            text-align: center;
+            margin: 20px; /* Margin for printing multiple on a page */
+        }
+        .company {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        .meta {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        img {
+            max-width: 90%;
+            height: auto;
+        }
+        .sku {
+            font-size: 12px;
+            font-family: monospace;
+            margin-top: -5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="label-container">
+        <div class="company">NexusERP Inventory</div>
+        
+        <div class="product-name">{{ product.name }}</div>
+        
+        <div class="meta">
+            {{ product.category.name }} | UoM: {{ product.uom.name }}
+        </div>
+
+        <div class="price">
+            ${{ product.sales_price }}
+        </div>
+
+        <img src="data:image/png;base64,{{ barcode_image }}" alt="Barcode">
+        
+        <div class="sku">{{ product.sku }}</div>
+    </div>
+</body>
+</html>

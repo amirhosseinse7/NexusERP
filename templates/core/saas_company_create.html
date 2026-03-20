@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block page_title %}Provision New Workspace{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-emerald-500">
+    
+    <div class="mb-8">
+        <h2 class="text-2xl font-black text-gray-800">Launch New Tenant</h2>
+        <p class="text-gray-500 text-sm mt-1">This will create an isolated database workspace and an initial admin user for the client.</p>
+    </div>
+    
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wider"><i class="fa-solid fa-building mr-2 text-blue-500"></i> Step 1: Company Details</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
+                    <input type="text" name="company_name" required placeholder="e.g. Acme Corp" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Company Domain</label>
+                    <input type="text" name="domain" required placeholder="e.g. acme.nexuserp.com" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition font-mono text-sm">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wider"><i class="fa-solid fa-user-tie mr-2 text-purple-500"></i> Step 2: Administrator Account</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Admin Username</label>
+                    <input type="text" name="admin_username" required placeholder="e.g. acme_admin" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Admin Email</label>
+                    <input type="email" name="admin_email" required placeholder="admin@acme.com" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                </div>
+                <div class="bg-yellow-50 text-yellow-800 text-xs p-3 rounded border border-yellow-200">
+                    <i class="fa-solid fa-lock mr-1"></i> A secure temporary password will be automatically generated and displayed on the next screen.
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 flex items-center justify-between">
+            <a href="{% url 'saas_dashboard' %}" class="text-gray-500 hover:text-gray-800 font-medium">Cancel</a>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition">
+                <i class="fa-solid fa-bolt mr-2"></i> Provision Workspace
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

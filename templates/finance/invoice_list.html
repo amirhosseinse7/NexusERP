@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block page_title %}Invoices & Bills{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        
+        <form method="GET" class="flex flex-wrap w-full md:w-auto gap-2 items-center">
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+            
+            <div class="relative flex-grow md:w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </div>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search ID, Partner, Ref..." 
+                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+
+            <select name="type" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                <option value="">All Types</option>
+                <option value="out_invoice" {% if type_filter == 'out_invoice' %}selected{% endif %}>Customer Invoices</option>
+                <option value="in_invoice" {% if type_filter == 'in_invoice' %}selected{% endif %}>Vendor Bills</option>
+            </select>
+            
+            <select name="state" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                <option value="">All Statuses</option>
+                <option value="draft" {% if state_filter == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="posted" {% if state_filter == 'posted' %}selected{% endif %}>Awaiting Payment</option>
+                <option value="paid" {% if state_filter == 'paid' %}selected{% endif %}>Paid</option>
+            </select>
+            
+            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition border border-gray-200 shadow-sm">
+                Filter
+            </button>
+            
+            {% if query or state_filter or type_filter %}
+                <a href="{% url 'invoice_list' %}" class="flex items-center text-red-500 hover:text-red-700 text-sm font-medium ml-2">Clear</a>
+            {% endif %}
+        </form>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap text-gray-600">
+                <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500 border-b">
+                    <tr>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'invoice_id' %}-invoice_id{% else %}invoice_id{% endif %}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}" class="flex items-center group">
+                                Document ID
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 font-semibold">Partner</th>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'date' %}-date{% else %}date{% endif %}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}" class="flex items-center group">
+                                Date
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 font-semibold">Type</th>
+                        <th class="px-6 py-4 text-right hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'total_amount' %}-total_amount{% else %}total_amount{% endif %}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}" class="flex items-center justify-end group">
+                                Amount
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 text-center hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'state' %}-state{% else %}state{% endif %}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}" class="flex items-center justify-center group">
+                                Status
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for inv in invoices %}
+                    <tr onclick="window.location='{% url 'invoice_detail' inv.invoice_id %}'" class="hover:bg-gray-50 transition cursor-pointer group">
+                        <td class="px-6 py-4 font-mono font-bold {% if inv.type == 'out_invoice' %}text-blue-600{% else %}text-purple-600{% endif %}">
+                            {{ inv.invoice_id }}
+                        </td>
+                        <td class="px-6 py-4 font-bold text-gray-900">{{ inv.partner.name }}</td>
+                        <td class="px-6 py-4">{{ inv.date|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4">
+                            {% if inv.type == 'out_invoice' %}
+                                <span class="text-blue-700 font-medium"><i class="fa-solid fa-file-invoice mr-1"></i> Customer Invoice</span>
+                            {% else %}
+                                <span class="text-purple-700 font-medium"><i class="fa-solid fa-receipt mr-1"></i> Vendor Bill</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-900">${{ inv.total_amount|floatformat:2 }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if inv.state == 'draft' %}
+                                <span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">DRAFT</span>
+                            {% elif inv.state == 'posted' %}
+                                <span class="px-2 py-1 rounded text-xs font-bold bg-orange-100 text-orange-800">AWAITING PAYMENT</span>
+                            {% elif inv.state == 'paid' %}
+                                <span class="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-800">PAID</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-400 transition"></i>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fa-solid fa-folder-open text-3xl mb-3 block"></i>
+                            No invoices or bills found matching your criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-gray-500 font-medium">
+                Showing <span class="text-gray-900">{{ invoices.start_index|default:0 }}</span> to <span class="text-gray-900">{{ invoices.end_index|default:0 }}</span> of <span class="text-gray-900">{{ invoices.paginator.count }}</span> entries
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                {% if invoices.has_previous %}
+                    <a href="?page={{ invoices.previous_page_number }}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg text-sm transition font-medium shadow-sm">Previous</a>
+                {% else %}
+                    <span class="px-3 py-1.5 border border-gray-200 text-gray-400 bg-gray-50 rounded-lg text-sm font-medium cursor-not-allowed">Previous</span>
+                {% endif %}
+
+                <span class="px-4 py-1.5 border border-blue-500 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold shadow-sm">
+                    Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}
+                </span>
+
+                {% if invoices.has_next %}
+                    <a href="?page={{ invoices.next_page_number }}&q={{ query|urlencode }}&state={{ state_filter|urlencode }}&type={{ type_filter|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg text-sm transition font-medium shadow-sm">Next</a>
+                {% else %}
+                    <span class="px-3 py-1.5 border border-gray-200 text-gray-400 bg-gray-50 rounded-lg text-sm font-medium cursor-not-allowed">Next</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

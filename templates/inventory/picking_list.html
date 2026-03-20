@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <h2 class="text-2xl font-bold">Warehouse Operations</h2>
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                    <th class="px-6 py-3">Reference</th>
+                    <th class="px-6 py-3">Type</th>
+                    <th class="px-6 py-3">Source Document</th>
+                    <th class="px-6 py-3">Status</th>
+                    <th class="px-6 py-3">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for p in pickings %}
+                <tr>
+                    <td class="px-6 py-4 font-mono font-bold text-blue-600">{{ p.picking_id }}</td>
+                    <td class="px-6 py-4">
+                        {% if p.picking_type.code == 'IN' %}<span class="text-green-600 font-bold">Receipt</span>
+                        {% elif p.picking_type.code == 'OUT' %}<span class="text-blue-600 font-bold">Delivery</span>
+                        {% elif p.picking_type.code == 'RET' %}<span class="text-red-600 font-bold">Return</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ p.origin }}</td>
+                    <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Ready</span></td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'picking_validate' p.picking_id %}" class="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition">
+                            Validate
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="p-8 text-center text-gray-400">No pending operations.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

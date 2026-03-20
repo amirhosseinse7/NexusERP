@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NexusERP{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        /* Custom scrollbar for a pro feel */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside class="w-64 bg-slate-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-900 z-10">
+                <i class="fa-solid fa-cube text-blue-500 text-xl mr-3"></i>
+                <span class="font-bold text-lg tracking-wide">NEXUS<span class="text-blue-500">ERP</span></span>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+                
+                <a href="{% url 'home' %}" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white group mb-4 {% if request.resolver_match.url_name == 'dashboard' %}bg-slate-800 text-white border-l-4 border-blue-500{% endif %}">
+                    <i class="fa-solid fa-chart-line w-8 text-center text-sm group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold tracking-wide">Dashboard</span>
+                </a>
+
+                {% if user.is_superuser %}
+                <div x-data="{ expanded: {% if 'saas' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-emerald-500 uppercase tracking-wider hover:text-emerald-400 transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-server w-6 text-center text-sm"></i>
+                            <span class="ml-2">SaaS Control</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        <a href="{% url 'saas_dashboard' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group {% if request.resolver_match.url_name == 'saas_dashboard' %}text-white font-medium{% endif %}">
+                            <span class="font-medium">Tenants & Billing</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perms.inventory.view_storagelocation or perms.core.view_material or perms.inventory.view_stockpicking %}
+                <div x-data="{ expanded: {% if 'inventory' in request.path or 'warehouses' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-boxes-stacked w-6 text-center text-sm"></i>
+                            <span class="ml-2">Supply Chain</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        {% if perms.inventory.view_storagelocation %}
+                        <a href="{% url 'location_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Warehouses</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.core.view_material %}
+                        <a href="{% url 'inventory_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Inventory</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.inventory.view_stockpicking %}
+                        <a href="{% url 'picking_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Warehouse Ops</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perms.mrp.view_billofmaterial or perms.mrp.view_manufacturingorder %}
+                <div x-data="{ expanded: {% if 'mrp' in request.path or 'bom' in request.path or 'mo' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-industry w-6 text-center text-sm"></i>
+                            <span class="ml-2">Manufacturing</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        {% if perms.mrp.view_billofmaterial %}
+                        <a href="{% url 'bom_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Bill of Materials</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.mrp.view_manufacturingorder %}
+                        <a href="{% url 'mo_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Work Orders</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perms.crm.view_opportunity or perms.logistics.view_salesorder or perms.logistics.view_purchaseorder %}
+                <div x-data="{ expanded: {% if 'crm' in request.path or 'sales' in request.path or 'purchase' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-cart-shopping w-6 text-center text-sm"></i>
+                            <span class="ml-2">Commerce</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        {% if perms.crm.view_opportunity %}
+                        <a href="{% url 'opportunity_board' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">CRM Pipeline</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.logistics.view_salesorder %}
+                        <a href="{% url 'so_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Sales Orders</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.logistics.view_purchaseorder %}
+                        <a href="{% url 'po_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Purchase Orders</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perms.finance.view_journalitem or perms.finance.view_invoice or perms.finance.view_account %}
+                <div x-data="{ expanded: {% if 'accounting' in request.path or 'invoice' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-file-invoice-dollar w-6 text-center text-sm"></i>
+                            <span class="ml-2">Finance</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        {% if perms.finance.view_journalitem %}
+                        <a href="{% url 'general_ledger' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">General Ledger</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.finance.view_invoice %}
+                        <a href="{% url 'invoice_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Invoices & Bills</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.finance.view_account %}
+                        <a href="{% url 'financial_reports' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Financial Reports</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perms.hr.view_employee or perms.core.view_partner %}
+                <div x-data="{ expanded: {% if 'hr' in request.path or 'employees' in request.path or 'partners' in request.path %}true{% else %}false{% endif %} }" class="mb-2">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-address-book w-6 text-center text-sm"></i>
+                            <span class="ml-2">Directory</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-slate-700 ml-5">
+                        {% if perms.core.view_partner %}
+                        <a href="{% url 'partner_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Partners Directory</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.hr.view_department or perms.hr.view_employee %}
+                        <a href="{% url 'hr_dashboard' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">HR Organization</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.hr.view_employee %}
+                        <a href="{% url 'employee_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Employees</span>
+                        </a>
+                        {% endif %}
+                        {% if perms.hr.view_timeoffrequest %}
+                        <a href="{% url 'time_off_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-sm group">
+                            <span class="font-medium">Time Off Requests</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if user.is_staff or user.is_superuser %}
+                <div x-data="{ expanded: {% if 'workspace' in request.path %}true{% else %}false{% endif %} }" class="mt-6 border-t border-slate-700 pt-4">
+                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-300 transition rounded-lg hover:bg-slate-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-building w-6 text-center text-sm"></i>
+                            <span class="ml-2">Workspace Admin</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="expanded" x-collapse class="mt-1 space-y-1 pl-2 border-l border-indigo-900/50 ml-5">
+                        <a href="{% url 'workspace_settings' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-indigo-200 hover:text-white text-sm group">
+                            <span class="font-medium">Company Profile</span>
+                        </a>
+                        <a href="{% url 'workspace_users' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-indigo-200 hover:text-white text-sm group">
+                            <span class="font-medium">Manage Users</span>
+                        </a>
+                        <a href="{% url 'workspace_roles' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-indigo-200 hover:text-white text-sm group">
+                            <span class="font-medium">Roles & Permissions</span>
+                        </a>
+                        <a href="{% url 'workspace_sequences' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-slate-800 text-indigo-200 hover:text-white text-sm group">
+                            <span class="font-medium">Document Sequences</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900 z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white uppercase shadow-sm">
+                            {{ user.username|slice:":2" }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-white">{{ user.username|title }}</p>
+                            <p class="text-xs text-emerald-400 font-medium">Online</p>
+                        </div>
+                    </div>
+                    
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="text-slate-400 hover:text-red-400 transition bg-slate-800 p-2 rounded-lg" title="Logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
+            
+            <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+                <h1 class="text-xl font-bold text-gray-800">
+                    {% block page_title %}Dashboard{% endblock %}
+                </h1>
+
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex relative text-gray-400 focus-within:text-gray-600">
+                        <i class="fa-solid fa-magnifying-glass absolute top-1/2 left-3 transform -translate-y-1/2"></i>
+                        <input type="text" placeholder="Search..." class="bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 w-64 transition">
+                    </div>
+
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="p-2 text-gray-400 hover:text-gray-600 transition relative focus:outline-none">
+                            <i class="fa-solid fa-bell text-xl"></i>
+                            <span class="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
+                        </button>
+                        
+                        <div x-show="open" @click.away="open = false" style="display: none;" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             class="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-2 origin-top-right">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <h3 class="font-bold text-sm text-gray-700">Notifications</h3>
+                            </div>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50">
+                                <p class="text-xs font-bold text-gray-800 flex items-center"><span class="h-2 w-2 rounded-full bg-green-500 mr-2"></span> System Online</p>
+                                <p class="text-xs text-gray-500 mt-0.5">NexusERP is running smoothly.</p>
+                            </a>
+                            <a href="{% url 'stock_moves' %}" class="block px-4 py-3 hover:bg-gray-50 transition">
+                                <p class="text-xs font-bold text-gray-800 flex items-center"><span class="h-2 w-2 rounded-full bg-blue-500 mr-2"></span> Stock Updated</p>
+                                <p class="text-xs text-gray-500 mt-0.5">Check recent movements in real-time.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 scroll-smooth">
+                {% block content %}
+                {% endblock %}
+            </main>
+
+        </div>
+    </div>
+
+</body>
+</html>

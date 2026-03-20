@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ location.name }} Inventory{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ location.name }}</h1>
+            <p class="text-gray-500 font-mono text-sm">{{ location.location_id }}</p>
+        </div>
+        <a href="{% url 'location_list' %}" class="text-gray-500 hover:text-gray-700">
+            &larr; Back to Warehouses
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                    <th class="px-6 py-3">Product</th>
+                    <th class="px-6 py-3">SKU</th>
+                    <th class="px-6 py-3 text-right">Quantity</th>
+                    <th class="px-6 py-3 text-right">Value</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for q in quants %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ q.material.name }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ q.material.sku }}</td>
+                    <td class="px-6 py-4 text-right font-bold">{{ q.quantity_on_hand|floatformat:0 }}</td>
+                    <td class="px-6 py-4 text-right text-gray-500">${{ q.stock_value|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+                        <p>This warehouse is empty.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

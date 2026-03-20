@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Current Inventory{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">📦 Inventory Levels <small class="text-muted">({{ latest_date }})</small></h2>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Warehouse</th>
+                        <th>Material</th>
+                        <th>On Hand</th>
+                        <th>Demand (Daily)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stock %}
+                    <tr>
+                        <td>{{ item.warehouse.name }}</td>
+                        <td>{{ item.material.material_name }}</td>
+                        <td class="{% if item.closing_on_hand_units < 10 %}text-danger fw-bold{% endif %}">
+                            {{ item.closing_on_hand_units }}
+                        </td>
+                        <td>{{ item.demand_units }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block page_title %}Inventory{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+    
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        
+        <form method="GET" class="flex flex-wrap w-full md:w-auto gap-2 items-center">
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+            
+            <div class="relative flex-grow md:w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </div>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search Name or SKU..." 
+                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+
+            <select name="category" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_filter == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition border border-gray-200 shadow-sm">
+                Filter
+            </button>
+            
+            {% if query or category_filter %}
+                <a href="{% url 'inventory_list' %}" class="flex items-center text-red-500 hover:text-red-700 text-sm font-medium ml-2">Clear</a>
+            {% endif %}
+        </form>
+
+        <div class="flex space-x-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+            {% if perms.inventory.add_inventoryadjustment %}
+            <a href="{% url 'adjustment_create' %}" class="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-50 transition shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-scale-balanced mr-2"></i> Audit
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'stock_moves' %}" class="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-50 transition shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> History
+            </a>
+            
+            {% if perms.core.add_material %}
+            <a href="{% url 'product_create' %}" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-plus mr-2"></i> Add Product
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'name' %}-name{% else %}name{% endif %}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}" class="flex items-center group">
+                                Product
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'category__name' %}-category__name{% else %}category__name{% endif %}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}" class="flex items-center group">
+                                Category
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'cost_price' %}-cost_price{% else %}cost_price{% endif %}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}" class="flex items-center group">
+                                Cost
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4 hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'sales_price' %}-sales_price{% else %}sales_price{% endif %}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}" class="flex items-center group">
+                                Price
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right hover:bg-gray-100 transition">
+                            <a href="?sort={% if sort_by == 'total_qty' %}-total_qty{% else %}total_qty{% endif %}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}" class="flex items-center justify-end group">
+                                On Hand
+                                <i class="fa-solid fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                            </a>
+                        </th>
+                        <th class="px-6 py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for p in products %}
+                    <tr onclick="window.location='{% url 'product_detail' p.sku %}'" class="hover:bg-blue-50 transition group cursor-pointer">
+                        
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">{{ p.name }}</div>
+                            <div class="text-xs text-gray-400 font-mono mt-0.5">{{ p.sku }}</div>
+                        </td>
+                        
+                        <td class="px-6 py-4">
+                            <span class="bg-gray-100 text-gray-600 py-1 px-2.5 rounded text-xs font-medium border border-gray-200">
+                                {{ p.category.name|default:"Uncategorized" }}
+                            </span>
+                        </td>
+                        
+                        <td class="px-6 py-4 text-gray-600">${{ p.cost_price }}</td>
+                        <td class="px-6 py-4 text-gray-900 font-medium">${{ p.sales_price }}</td>
+                        
+                        <td class="px-6 py-4">
+                            {% with qty=p.total_qty|default:0 %}
+                                {% if qty <= 0 %}
+                                    <span class="bg-red-50 text-red-600 py-1 px-2.5 rounded-full text-xs font-bold border border-red-100">
+                                        Out of Stock
+                                    </span>
+                                {% elif qty < p.min_stock_level %}
+                                    <span class="bg-orange-50 text-orange-600 py-1 px-2.5 rounded-full text-xs font-bold border border-orange-100">
+                                        Low Stock
+                                    </span>
+                                {% else %}
+                                    <span class="bg-green-50 text-green-600 py-1 px-2.5 rounded-full text-xs font-bold border border-green-100">
+                                        In Stock
+                                    </span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        
+                        <td class="px-6 py-4 font-bold text-gray-900 text-right text-lg">
+                            {{ p.total_qty|default:0|floatformat:0 }}
+                        </td>
+                        
+                        <td class="px-6 py-4 text-right">
+                            <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-400 transition"></i>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-3 text-gray-200 block"></i>
+                            <p>No products found in inventory.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-gray-500 font-medium">
+                Showing <span class="text-gray-900">{{ products.start_index|default:0 }}</span> to <span class="text-gray-900">{{ products.end_index|default:0 }}</span> of <span class="text-gray-900">{{ products.paginator.count }}</span> entries
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                {% if products.has_previous %}
+                    <a href="?page={{ products.previous_page_number }}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg text-sm transition font-medium shadow-sm">Previous</a>
+                {% else %}
+                    <span class="px-3 py-1.5 border border-gray-200 text-gray-400 bg-gray-50 rounded-lg text-sm font-medium cursor-not-allowed">Previous</span>
+                {% endif %}
+
+                <span class="px-4 py-1.5 border border-blue-500 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold shadow-sm">
+                    Page {{ products.number }} of {{ products.paginator.num_pages }}
+                </span>
+
+                {% if products.has_next %}
+                    <a href="?page={{ products.next_page_number }}&q={{ query|urlencode }}&category={{ category_filter|urlencode }}&sort={{ sort_by|urlencode }}" class="px-3 py-1.5 border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 rounded-lg text-sm transition font-medium shadow-sm">Next</a>
+                {% else %}
+                    <span class="px-3 py-1.5 border border-gray-200 text-gray-400 bg-gray-50 rounded-lg text-sm font-medium cursor-not-allowed">Next</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

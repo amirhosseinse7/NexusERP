@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_title %}Stock Moves History{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100 bg-gray-50">
+        <h2 class="font-bold text-gray-700">Product Movements</h2>
+    </div>
+    <table class="w-full text-left text-sm text-gray-600">
+        <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-700">
+            <tr>
+                <th class="p-4">Date</th>
+                <th class="p-4">Reference</th>
+                <th class="p-4">Product</th>
+                <th class="p-4">From</th>
+                <th class="p-4">To</th>
+                <th class="p-4 text-right">Qty</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for move in moves %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="p-4 text-gray-500 text-xs">{{ move.date|date:"Y-m-d H:i" }}</td>
+                <td class="p-4 font-mono text-blue-600 text-xs">{{ move.reference }}</td>
+                <td class="p-4 font-medium">{{ move.material.name }}</td>
+                <td class="p-4 text-xs">
+                    <span class="bg-gray-100 px-2 py-1 rounded">{{ move.location_source.location_id }}</span>
+                </td>
+                <td class="p-4 text-xs">
+                    <span class="bg-gray-100 px-2 py-1 rounded">{{ move.location_dest.location_id }}</span>
+                </td>
+                <td class="p-4 text-right font-bold {% if move.location_dest.type == 'internal' %}text-green-600{% else %}text-red-600{% endif %}">
+                    {{ move.qty|floatformat:0 }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

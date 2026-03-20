@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block page_title %}General Ledger{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <h2 class="font-bold text-gray-700">Financial Transactions</h2>
+        <div class="flex space-x-3 mt-4 md:mt-0">
+            <a href="{% url 'general_ledger_export' %}" class="flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition text-sm font-medium">
+                <i class="fa-solid fa-file-csv mr-2"></i> CSV
+            </a>
+            <a href="{% url 'general_ledger_pdf' %}" target="_blank" class="flex items-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium shadow-sm">
+                <i class="fa-solid fa-print mr-2"></i> Print PDF
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Debit</p>
+                <p class="text-xl font-bold text-gray-800">${{ total_debit|floatformat:2 }}</p>
+            </div>
+            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Credit</p>
+                <p class="text-xl font-bold text-gray-800">${{ total_credit|floatformat:2 }}</p>
+            </div>
+            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <i class="fa-solid fa-minus"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Net Balance</p>
+                <p class="text-xl font-bold {% if balance >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                    ${{ balance|floatformat:2 }}
+                </p>
+            </div>
+            <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
+                <tr>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Reference</th>
+                    <th class="px-6 py-4">Account</th>
+                    <th class="px-6 py-4 text-right">Debit</th>
+                    <th class="px-6 py-4 text-right">Credit</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for item in items %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-gray-500">{{ item.entry.date|date:"Y-m-d" }}</td>
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ item.entry.reference }}</td>
+                    <td class="px-6 py-4">
+                        <span class="bg-blue-50 text-blue-700 py-1 px-2 rounded text-xs font-bold mr-2">{{ item.account.code }}</span>
+                        {{ item.account.name }}
+                    </td>
+                    <td class="px-6 py-4 text-right text-gray-700">
+                        {% if item.debit > 0 %}${{ item.debit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right text-gray-700">
+                        {% if item.credit > 0 %}${{ item.credit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-gray-400">No transactions recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </table>
+        
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+            <span class="text-sm text-gray-500 font-medium">
+                Showing Page {{ items.number }} of {{ items.paginator.num_pages }}
+            </span>
+            <div class="flex space-x-2">
+                {% if items.has_previous %}
+                <a href="?page={{ items.previous_page_number }}" class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-bold text-gray-700 shadow-sm">Previous</a>
+                {% endif %}
+                {% if items.has_next %}
+                <a href="?page={{ items.next_page_number }}" class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-bold text-gray-700 shadow-sm">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        </div>
+</div>
+{% endblock %}

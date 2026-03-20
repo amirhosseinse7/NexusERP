@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block page_title %}Workspace Details{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="mb-4 max-w-6xl mx-auto">
+        <a href="{% url 'home' %}" class="text-gray-500 hover:text-indigo-600 transition font-medium text-sm flex items-center w-fit">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-800{% else %}bg-emerald-50 border-emerald-500 text-emerald-800{% endif %} border-l-4 p-4 rounded shadow-sm mb-4">
+            <p class="font-bold">System Alert</p>
+            <p class="text-sm font-mono mt-1">{{ message }}</p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-emerald-500 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-black text-gray-800">{{ company.name }}</h2>
+            <p class="text-gray-500 font-mono text-sm mt-1"><i class="fa-solid fa-globe mr-2"></i>{{ company.domain }}</p>
+        </div>
+        <div class="text-right">
+            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tenant ID</span>
+            <span class="font-mono font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
+                TENANT-{{ company.id|stringformat:"04d" }}
+            </span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="font-bold text-gray-700"><i class="fa-solid fa-users mr-2"></i> Workspace Users</h2>
+            </div>
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-500 border-b">
+                    <tr>
+                        <th class="px-6 py-4">Username</th>
+                        <th class="px-6 py-4">Email</th>
+                        <th class="px-6 py-4 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for profile in profiles %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-bold text-gray-900">{{ profile.user.username }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ profile.user.email|default:"-" }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if profile.user.is_staff %}
+                                <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded">ADMIN</span>
+                            {% else %}
+                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2.5 py-1 rounded">USER</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-400 italic">No users are currently assigned to this workspace.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-slate-900 p-6 rounded-xl shadow-sm">
+                <h3 class="text-emerald-400 font-bold uppercase tracking-wider mb-2 text-sm"><i class="fa-solid fa-link mr-2"></i> Link Existing User</h3>
+                <p class="text-slate-400 text-xs mb-4">Move an existing system user into this workspace.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="text" name="username" required placeholder="Enter exact username..." class="w-full border border-slate-700 bg-slate-800 text-white rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none mb-3">
+                    <button type="submit" name="add_existing_user" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-sm shadow-md transition">
+                        Link User
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

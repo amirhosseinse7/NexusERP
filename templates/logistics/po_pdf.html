@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Helvetica, sans-serif; color: #333; line-height: 1.6; }
+        .header-box { padding-bottom: 20px; border-bottom: 2px solid #eee; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #16a34a; } /* Green for Procurement */
+        .invoice-title { font-size: 32px; font-weight: bold; text-align: right; color: #aaa; text-transform: uppercase; }
+        .info-columns { width: 100%; margin-bottom: 30px; }
+        .info-columns td { vertical-align: top; width: 50%; }
+        table.items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.items th { background: #f0fdf4; text-align: left; padding: 12px; border-bottom: 2px solid #16a34a; font-size: 12px; text-transform: uppercase; }
+        table.items td { padding: 12px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="header-box">
+        <table width="100%">
+            <tr>
+                <td class="logo">NEXUS<span style="color:#333">ERP</span></td>
+                <td class="invoice-title">PURCHASE ORDER</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="info-columns">
+        <tr>
+            <td>
+                <strong>Vendor:</strong><br>
+                {{ order.partner.name }}<br>
+                {{ order.partner.address|linebreaksbr }}
+            </td>
+            <td style="text-align: right;">
+                <strong>Ship To:</strong><br>
+                My Company Warehouse<br>
+                Dock 4, 123 Business Rd.<br>
+                New York, NY 10001
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-bottom: 20px;">
+        <strong>PO Number:</strong> {{ order.po_id }}<br>
+        <strong>Order Date:</strong> {{ order.date|date:"Y-m-d" }}
+    </div>
+    <a href="{% url 'po_pdf' order.po_id %}" target="_blank" class="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-200 transition font-medium">
+    <i class="fa-solid fa-print mr-2"></i> Print PO
+    </a>
+    <table class="items">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Product Description</th>
+                <th style="text-align: right;">Quantity</th>
+                <th style="text-align: right;">Est. Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in order.lines.all %}
+            <tr>
+                <td>{{ line.material.sku }}</td>
+                <td>{{ line.material.name }}</td>
+                <td style="text-align: right;">{{ line.quantity }}</td>
+                <td style="text-align: right;">${{ line.material.cost_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px;">
+        <p style="font-size: 12px;">Authorized Signature: __________________________</p>
+    </div>
+</body>
+</html>

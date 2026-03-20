@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block page_title %}Financial Reports{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+
+    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <h2 class="font-bold text-gray-800 text-lg">Company Financial Statements</h2>
+        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+            <i class="fa-solid fa-print mr-2"></i> Print Reports
+        </button>
+    </div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+        <form method="GET" class="flex flex-col sm:flex-row items-end space-y-4 sm:space-y-0 sm:space-x-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Start Date</label>
+                <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition w-full sm:w-auto">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">End Date</label>
+                <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition w-full sm:w-auto">
+            </div>
+            <div class="flex space-x-2 w-full sm:w-auto">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition shadow-sm w-full sm:w-auto">
+                    <i class="fa-solid fa-filter mr-2"></i> Filter Reports
+                </button>
+                <a href="{% url 'financial_reports' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                <h3 class="font-bold text-blue-900 text-lg">Income Statement (P&L)</h3>
+                <p class="text-xs text-blue-600">{% if start_date %}From {{ start_date }}{% endif %} {% if end_date %}To {{ end_date }}{% endif %}{% if not start_date and not end_date %}Period: All Time{% endif %}</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div>
+                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-3">Operating Income</h4>
+                    <div class="space-y-2 text-sm">
+                        {% for acc in income_accounts %}
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ acc.code }} - {{ acc.name }}</span>
+                            <span>${{ acc.balance|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-400 italic">No income recorded.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 mt-3 pt-2 border-t border-gray-100">
+                        <span>Total Income</span>
+                        <span>${{ total_income|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-3">Operating Expenses</h4>
+                    <div class="space-y-2 text-sm">
+                        {% for acc in expense_accounts %}
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ acc.code }} - {{ acc.name }}</span>
+                            <span>${{ acc.balance|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-400 italic">No expenses recorded.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 mt-3 pt-2 border-t border-gray-100">
+                        <span>Total Expenses</span>
+                        <span>${{ total_expense|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center p-4 rounded-lg {% if net_profit >= 0 %}bg-green-50 border-green-200 text-green-800{% else %}bg-red-50 border-red-200 text-red-800{% endif %} border font-bold text-lg">
+                    <span>Net Profit</span>
+                    <span>${{ net_profit|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-purple-50 px-6 py-4 border-b border-purple-100">
+                <h3 class="font-bold text-purple-900 text-lg">Balance Sheet</h3>
+                <p class="text-xs text-purple-600">As of {% if end_date %}{{ end_date }}{% else %}Today{% endif %}</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div>
+                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-3">Assets</h4>
+                    <div class="space-y-2 text-sm">
+                        {% for acc in asset_accounts %}
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ acc.code }} - {{ acc.name }}</span>
+                            <span>${{ acc.balance|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-400 italic">No assets recorded.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 mt-3 pt-2 border-t border-gray-100">
+                        <span>Total Assets</span>
+                        <span>${{ total_assets|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-3">Liabilities</h4>
+                    <div class="space-y-2 text-sm">
+                        {% for acc in liability_accounts %}
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ acc.code }} - {{ acc.name }}</span>
+                            <span>${{ acc.balance|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-400 italic">No liabilities recorded.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 mt-3 pt-2 border-t border-gray-100">
+                        <span>Total Liabilities</span>
+                        <span>${{ total_liabilities|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-3">Equity</h4>
+                    <div class="space-y-2 text-sm">
+                        {% for acc in equity_accounts %}
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ acc.code }} - {{ acc.name }}</span>
+                            <span>${{ acc.balance|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                        <div class="flex justify-between text-blue-600 font-medium pt-2">
+                            <span>Retained Earnings (Net Profit)</span>
+                            <span>${{ net_profit|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center p-4 rounded-lg bg-gray-50 border border-gray-200 text-gray-800 font-bold text-lg">
+                    <span>Total Liabilities & Equity</span>
+                    <span>${{ total_equity_and_liabilities|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

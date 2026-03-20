@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 1.5cm;
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+        body { font-family: Helvetica, sans-serif; font-size: 12px; color: #333; }
+        table.layout { width: 100%; margin-bottom: 30px; }
+        .logo { font-size: 28px; font-weight: bold; color: #f97316; } /* Orange for Finance */
+        .logo span { color: #333; }
+        .doc-title { text-align: right; font-size: 24px; color: #555; text-transform: uppercase; font-weight: bold; }
+        
+        .box { background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 10px; }
+        
+        table.lines { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.lines th { background-color: #f97316; color: #fff; font-weight: bold; padding: 10px; text-align: left; font-size: 11px; text-transform: uppercase; }
+        table.lines td { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+        .text-right { text-align: right; }
+        
+        table.totals { width: 50%; float: right; margin-top: 20px; border-collapse: collapse; }
+        table.totals td { padding: 8px; font-size: 14px; }
+        .total-row td { border-top: 2px solid #333; font-weight: bold; font-size: 16px; }
+        
+        .footer-text { text-align: center; font-size: 10px; color: #888; border-top: 1px solid #e5e7eb; padding-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <table class="layout">
+        <tr>
+            <td width="50%">
+                <div class="logo">NEXUS<span>ERP</span></div>
+                <p style="color: #666; margin-top: 5px;">
+                    123 Enterprise Way<br>
+                    Tech District, NY 10001<br>
+                    Tax ID: US-987654321
+                </p>
+            </td>
+            <td width="50%" class="text-right">
+                <div class="doc-title">Tax Invoice</div>
+                <p style="font-size: 14px; margin-top: 5px;"><strong># {{ invoice.invoice_id }}</strong></p>
+                <p>Issue Date: {{ invoice.date|date:"Y-m-d" }}</p>
+                {% if invoice.source_document %}<p>Reference: {{ invoice.source_document }}</p>{% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <table class="layout" style="margin-bottom: 20px;">
+        <tr>
+            <td width="48%" class="box">
+                <strong>Customer:</strong><br>
+                <span style="font-size: 14px; font-weight: bold;">{{ invoice.partner.name }}</span><br>
+                {{ invoice.partner.address|default:"Address Not Provided"|linebreaksbr }}
+            </td>
+            <td width="4%"></td>
+            <td width="48%" class="box text-right" style="background-color: {% if invoice.state == 'paid' %}#f0fdf4{% else %}#fef2f2{% endif %};">
+                <strong>Status:</strong><br>
+                <span style="font-size: 18px; font-weight: bold; text-transform: uppercase; color: {% if invoice.state == 'paid' %}#16a34a{% else %}#dc2626{% endif %};">{{ invoice.state }}</span><br><br>
+                <strong>Amount Due:</strong><br>
+                <span style="font-size: 16px; font-weight: bold;">${{ invoice.amount_due|floatformat:2 }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="lines">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th class="text-right">Qty</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in invoice.lines.all %}
+            <tr>
+                <td>{{ line.description }}</td>
+                <td class="text-right">{{ line.quantity|floatformat:0 }}</td>
+                <td class="text-right">${{ line.unit_price|floatformat:2 }}</td>
+                <td class="text-right">${{ line.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totals">
+        <tr>
+            <td class="text-right">Subtotal:</td>
+            <td class="text-right">${{ invoice.total_amount|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td class="text-right">Payments Applied:</td>
+            <td class="text-right">
+                {% widthratio invoice.amount_due|add:"-1"|add:invoice.total_amount 1 -1 %}
+            </td>
+        </tr>
+        <tr class="total-row">
+            <td class="text-right">Balance Due:</td>
+            <td class="text-right">${{ invoice.amount_due|floatformat:2 }}</td>
+        </tr>
+    </table>
+
+    <div style="clear: both;"></div>
+
+    <div style="margin-top: 40px;">
+        <strong>Remittance Details:</strong>
+        <p style="font-size: 11px; color: #555;">
+            Bank Name: Global Finance Bank<br>
+            Account No: 123456789<br>
+            Routing No: 987654321<br>
+            <em>Please include Invoice #{{ invoice.invoice_id }} in your transfer notes.</em>
+        </p>
+    </div>
+
+    <div id="footerContent">
+        <div class="footer-text">
+            Generated securely by NexusERP Financials &bull; Page <pdf:pagenumber> of <pdf:pagecount>
+        </div>
+    </div>
+
+</body>
+</html>

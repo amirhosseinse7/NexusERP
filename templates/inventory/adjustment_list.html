@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block page_title %}Stock Adjustments{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h2 class="font-bold text-gray-700">Audit History</h2>
+        <a href="{% url 'adjustment_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            <i class="fa-solid fa-plus mr-2"></i> Start Count
+        </a>
+    </div>
+    <table class="w-full text-left text-sm text-gray-600">
+        <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-700">
+            <tr>
+                <th class="p-4">Reference</th>
+                <th class="p-4">Location</th>
+                <th class="p-4">Date</th>
+                <th class="p-4 text-center">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for adj in adjustments %}
+            <tr onclick="window.location='{% url 'adjustment_detail' adj.ref %}'" class="hover:bg-gray-50 transition cursor-pointer">
+                <td class="p-4 font-mono text-blue-600 font-medium">{{ adj.ref }}</td>
+                <td class="p-4">{{ adj.location.name }}</td>
+                <td class="p-4">{{ adj.date|date:"M d, Y" }}</td>
+                <td class="p-4 text-center">
+                    {% if adj.state == 'draft' %}
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">In Progress</span>
+                    {% else %}
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Applied</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="p-8 text-center text-gray-400">No audits found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

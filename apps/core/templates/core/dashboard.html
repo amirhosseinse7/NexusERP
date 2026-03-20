@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Executive Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">🚀 Executive Overview</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Revenue</h6>
+                    <h3 class="text-success">£{{ revenue }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Net Margin</h6>
+                    <h3>£{{ margin }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">OTIF Rate</h6>
+                    <h3 class="{% if otif_rate > 90 %}text-success{% else %}text-warning{% endif %}">
+                        {{ otif_rate }}%
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Orders</h6>
+                    <h3>{{ total_orders }} <small class="text-muted fs-6">({{ pending_orders }} Pending)</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">📉 Order Trends</h5>
+            <small class="text-muted">Last 30 Days</small>
+        </div>
+        <div class="card-body">
+            <canvas id="orderChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('orderChart').getContext('2d');
+            
+            
+            const labels = JSON.parse('{{ chart_labels|safe }}');
+            const data = JSON.parse('{{ chart_data|safe }}');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Orders',
+                        data: data,
+                        borderColor: '#0d6efd', 
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

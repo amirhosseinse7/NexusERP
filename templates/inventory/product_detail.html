@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ product.name }} <span class="text-gray-400 font-normal text-sm ml-2">{{ product.sku }}</span>{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="mb-4">
+        <a href="{% url 'inventory_list' %}" class="text-gray-500 hover:text-blue-600 transition font-medium text-sm flex items-center w-fit">
+          <i class="fa-solid fa-arrow-left mr-2"></i> Back to Inventory
+        </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">On Hand</h3>
+            <div class="mt-2 flex items-baseline">
+                <span class="text-3xl font-bold text-gray-900">{{ on_hand|floatformat:0 }}</span>
+                <span class="ml-2 text-sm text-gray-500">{{ product.uom.name }}</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Physical quantity in warehouse</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-blue-100 ring-1 ring-blue-50">
+            <h3 class="text-blue-600 text-xs font-bold uppercase tracking-wider">Reserved</h3>
+            <div class="mt-2 flex items-baseline">
+                <span class="text-3xl font-bold text-blue-700">{{ reserved|floatformat:0 }}</span>
+            </div>
+            <p class="text-xs text-blue-400 mt-1">Sold but not shipped</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-green-100 ring-1 ring-green-50">
+            <h3 class="text-green-600 text-xs font-bold uppercase tracking-wider">Available</h3>
+            <div class="mt-2 flex items-baseline">
+                <span class="text-3xl font-bold text-green-700">{{ available|floatformat:0 }}</span>
+            </div>
+            <p class="text-xs text-green-400 mt-1">Free to sell</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Product Data</h3>
+                <dl class="space-y-4 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Category</dt>
+                        <dd class="font-medium">{{ product.category.name }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Cost Price</dt>
+                        <dd class="font-medium">${{ product.cost_price }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Sales Price</dt>
+                        <dd class="font-medium">${{ product.sales_price }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Weight</dt>
+                        <dd class="font-medium">{{ product.weight_kg }} kg</dd>
+                    </div>
+                </dl>
+                
+                <div class="mt-8 pt-4 border-t space-y-3">
+                    <div class="flex space-x-3">
+                        <a href="{% url 'product_label_pdf' product.sku %}" target="_blank" class="flex-1 flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-sm">
+                            <i class="fa-solid fa-barcode mr-2"></i> Label
+                        </a>
+
+                        <a href="{% url 'product_edit' product.sku %}" class="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm">
+                            <i class="fa-solid fa-pen-to-square mr-2"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit">
+                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Automation Rules</h3>
+                <dl class="space-y-4 text-sm">
+                    <div class="flex justify-between items-center">
+                        <dt class="text-gray-500">Auto-Reorder</dt>
+                        <dd>
+                            {% if product.auto_reorder %}
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-robot mr-1"></i> ACTIVE</span>
+                            {% else %}
+                                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold">DISABLED</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Reorder Qty</dt>
+                        <dd class="font-medium">
+                            {% if product.custom_reorder_qty %}
+                                {{ product.custom_reorder_qty }} Units
+                            {% else %}
+                                Fill to Max ({{ product.max_stock_level }})
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Preferred Supplier</dt>
+                        <dd class="font-medium text-right">
+                            {% if product.preferred_supplier %}
+                                {{ product.preferred_supplier.name }}
+                            {% else %}
+                                <span class="text-red-400 text-xs font-bold"><i class="fa-solid fa-triangle-exclamation"></i> None Set</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4 border-b pb-2">
+                    <h3 class="font-bold text-gray-800">AI Analytics</h3>
+                    <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">Live Data</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">ABC Class</p>
+                        <p class="text-3xl font-bold mt-1 
+                            {% if product.abc_class == 'A' %}text-green-600
+                            {% elif product.abc_class == 'B' %}text-blue-600
+                            {% else %}text-gray-400{% endif %}">
+                            {{ product.abc_class }}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">Importance</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Churn Rate</p>
+                        <p class="text-2xl font-bold text-gray-700 mt-1">{{ product.churn_rate|floatformat:1 }}%</p>
+                        <p class="text-xs text-gray-400 mt-1">Turnover/Mo</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Supplier Perf.</p>
+                        <p class="text-2xl font-bold text-gray-700 mt-1">{{ product.supplier_perf|floatformat:1 }}%</p>
+                        <p class="text-xs text-gray-400 mt-1">On-Time</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">30-Day Forecast</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fa-solid fa-arrow-trend-up text-blue-500 mr-2"></i>
+                            <span class="text-2xl font-bold text-gray-800">{{ product.forecast_30d|floatformat:0 }}</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Predicted Sales</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                    <h3 class="font-bold text-gray-700">Stock by Location</h3>
+                </div>
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                        <tr>
+                            <th class="px-6 py-3">Location</th>
+                            <th class="px-6 py-3 text-right">On Hand</th>
+                            <th class="px-6 py-3 text-right">Reserved</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for quant in quants %}
+                        <tr>
+                            <td class="px-6 py-4 font-medium text-gray-900">
+                                {{ quant.location.name }}
+                                <div class="text-xs text-gray-400 font-mono">{{ quant.location.location_id }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-right">{{ quant.quantity_on_hand|floatformat:0 }}</td>
+                            <td class="px-6 py-4 text-right text-blue-600 font-bold">
+                                {% if quant.quantity_reserved > 0 %}{{ quant.quantity_reserved|floatformat:0 }}{% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-gray-400">No stock found in internal warehouses.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block page_title %}Document Sequences{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="mb-4">
+        <a href="{% url 'home' %}" class="text-gray-500 hover:text-indigo-600 transition font-medium text-sm flex items-center w-fit">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-800 p-4 rounded shadow-sm mb-4">
+            <p class="font-bold">Sequence Update</p>
+            <p class="text-sm font-mono mt-1">{{ message }}</p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500 mb-6 flex items-start space-x-4">
+        <div class="text-indigo-500 text-3xl"><i class="fa-solid fa-hashtag"></i></div>
+        <div>
+            <h2 class="text-2xl font-black text-gray-800">Sequence Customization</h2>
+            <p class="text-gray-500 text-sm mt-1">Configure the automatic ID generation for all system documents. Modifying the prefix will not affect existing historical documents.</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-500 border-b">
+                <tr>
+                    <th class="px-6 py-4">Document Type</th>
+                    <th class="px-6 py-4">System Code</th>
+                    <th class="px-6 py-4">Current Prefix</th>
+                    <th class="px-6 py-4 text-center">Padding</th>
+                    <th class="px-6 py-4">Next Output Example</th>
+                    <th class="px-6 py-4 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for seq in sequences %}
+                <tr class="hover:bg-gray-50 transition">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="seq_id" value="{{ seq.id }}">
+                        
+                        <td class="px-6 py-4 font-bold text-gray-900">{{ seq.name }}</td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400">{{ seq.code }}</td>
+                        
+                        <td class="px-6 py-4">
+                            <input type="text" name="prefix" value="{{ seq.prefix }}" class="border border-gray-300 rounded px-2 py-1 w-24 text-sm focus:ring-indigo-500 font-mono focus:border-indigo-500 outline-none">
+                        </td>
+                        
+                        <td class="px-6 py-4 text-center">
+                            <input type="number" name="padding" value="{{ seq.padding }}" min="1" max="10" class="border border-gray-300 rounded px-2 py-1 w-16 text-center text-sm focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </td>
+                        
+                        <td class="px-6 py-4">
+                            <span class="bg-indigo-50 text-indigo-700 font-mono text-xs px-2 py-1 rounded border border-indigo-100 font-bold">
+                                {{ seq.prefix }}0000{{ seq.next_number }}
+                            </span>
+                        </td>
+                        
+                        <td class="px-6 py-4 text-right">
+                            <button type="submit" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded transition">
+                                <i class="fa-solid fa-check mr-1"></i> Update
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

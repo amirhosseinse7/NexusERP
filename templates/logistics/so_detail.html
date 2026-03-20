@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block page_title %}Sales Order {{ so.so_id }}{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto mb-4">
+    <a href="{% url 'so_list' %}" class="text-gray-500 hover:text-blue-600 transition font-medium text-sm flex items-center w-fit">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Sales Orders
+    </a>
+</div>
+
+{% if messages %}
+    <div class="max-w-6xl mx-auto mb-4 space-y-2">
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center">
+            <i class="fa-solid fa-circle-exclamation mr-2"></i>
+            <span class="block sm:inline font-medium">{{ message }}</span>
+        </div>
+        {% elif message.tags == 'success' %}
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center">
+            <i class="fa-solid fa-circle-check mr-2"></i>
+            <span class="block sm:inline font-medium">{{ message }}</span>
+        </div>
+        {% else %}
+        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center">
+            <i class="fa-solid fa-circle-info mr-2"></i>
+            <span class="block sm:inline font-medium">{{ message }}</span>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+{% endif %}
+
+<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                <span class="font-bold text-gray-700">Order Content</span>
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold">{{ so.state|upper }}</span>
+            </div>
+            
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b">
+                    <tr>
+                        <th class="px-6 py-3">Product</th>
+                        <th class="px-6 py-3 text-right">Qty</th>
+                        <th class="px-6 py-3 text-right">Price</th>
+                        <th class="px-6 py-3 text-right">Delivered</th>
+                        {% if so.state == 'draft' %}
+                        <th class="px-6 py-3 text-center">Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for line in so.lines.all %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-medium">{{ line.material.name }}</td>
+                        <td class="px-6 py-4 text-right">{{ line.qty_requested|floatformat:0 }}</td>
+                        <td class="px-6 py-4 text-right">${{ line.price_unit }}</td>
+                        <td class="px-6 py-4 text-right">{{ line.qty_delivered|floatformat:0 }}</td>
+                        
+                        {% if so.state == 'draft' %}
+                        <td class="px-6 py-4 text-center">
+                            <form method="post" action="{% url 'so_line_delete' so.so_id line.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-400 hover:text-red-600 transition" title="Delete Line">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="p-6 text-center text-gray-400">Empty order.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if so.state == 'draft' %}
+            <div class="bg-gray-50 p-4 border-t border-gray-100">
+                <form method="post" class="flex gap-2">
+                    {% csrf_token %}
+                    <div class="flex-grow">{{ line_form.material }}</div>
+                    <div class="w-24">{{ line_form.qty_requested }}</div>
+                    <button type="submit" name="add_line" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm transition shadow-sm font-medium">Add</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            
+            <div class="flex gap-2 mb-6">
+                <a href="{% url 'so_pdf' so.so_id %}" target="_blank" class="flex-1 text-center bg-gray-700 hover:bg-gray-800 transition text-white py-2 rounded-lg font-medium shadow-sm">
+                    <i class="fa-solid fa-print mr-2"></i> PDF
+                </a>
+                <form method="post" class="flex-1 m-0">
+                    {% csrf_token %}
+                    <button type="submit" name="email_order" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 transition py-2 rounded-lg font-bold shadow-sm">
+                        <i class="fa-solid fa-envelope mr-1"></i> Email
+                    </button>
+                </form>
+            </div>
+            
+            <h3 class="font-bold text-gray-800 mb-1">{{ so.customer.name }}</h3>
+            <p class="text-sm text-gray-500 mb-6">Pricelist: <span class="font-medium">{{ so.customer.pricelist.name|default:"Standard" }}</span></p>
+            
+            <form method="post" class="grid gap-3 pt-4 border-t border-gray-100">
+                {% csrf_token %}
+                
+                {% if so.state == 'draft' %}
+                    <button type="submit" name="confirm_order" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium shadow-sm transition">
+                        Confirm Sale
+                    </button>
+                {% elif so.state == 'confirmed' %}
+                    <button type="submit" name="ship_goods" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-medium shadow-sm transition">
+                        <i class="fa-solid fa-truck-fast mr-2"></i> Ship Goods
+                    </button>
+                {% elif so.state == 'shipped' %}
+                    
+                    {% if not has_invoice %}
+                    <button type="submit" name="create_invoice" class="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-bold shadow-sm transition mb-2">
+                        <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Create Invoice
+                    </button>
+                    {% else %}
+                    <div class="text-center mt-2 text-green-700 font-bold text-sm bg-green-50 py-2 rounded-lg border border-green-200 mb-2">
+                        <i class="fa-solid fa-check-double mr-1"></i> Invoiced & Billed
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" name="return_goods" class="w-full bg-white hover:bg-gray-50 text-red-600 py-2.5 rounded-lg font-medium border border-red-200 shadow-sm transition">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> Process Return
+                    </button>
+                    <div class="text-center mt-3 text-blue-600 font-bold text-sm bg-blue-50 py-2 rounded-lg border border-blue-100">
+                        <i class="fa-solid fa-check-circle mr-1"></i> Delivery Complete
+                    </div>
+                {% elif so.state == 'returned' %}
+                    <div class="text-center mt-2 text-red-600 font-bold text-sm bg-red-50 py-2 rounded-lg border border-red-100">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Returned (RMA Logged)
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center text-gray-700">
+            <i class="fa-solid fa-clock-rotate-left mr-3"></i>
+            <h3 class="font-bold">Document History & Audit Trail</h3>
+        </div>
+        
+        <div class="p-6">
+            <div class="relative border-l-2 border-gray-100 ml-3 space-y-6">
+                {% for record in history_records %}
+                <div class="relative pl-6">
+                    {% if record.history_type == '+' %}
+                        <div class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-green-500 ring-4 ring-white"></div>
+                    {% elif record.history_type == '~' %}
+                        <div class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-white"></div>
+                    {% elif record.history_type == '-' %}
+                        <div class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-red-500 ring-4 ring-white"></div>
+                    {% endif %}
+                    
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-bold text-gray-800 text-sm">
+                                    {% if record.history_type == '+' %}Document Created
+                                    {% elif record.history_type == '~' %}Document Updated
+                                    {% elif record.history_type == '-' %}Document Deleted
+                                    {% endif %}
+                                </span>
+                                <span class="text-xs text-gray-500 ml-2">by {{ record.history_user.username|default:"System Engine"|title }}</span>
+                            </div>
+                            <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+                                {{ record.history_date|date:"M d, Y - H:i:s" }}
+                            </span>
+                        </div>
+                        
+                        <div class="text-xs text-gray-600 flex gap-4">
+                            <p><strong>State:</strong> <span class="uppercase text-gray-800">{{ record.state }}</span></p>
+                            <p><strong>Delivery Mode:</strong> {{ record.delivery_mode }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="pl-6 text-sm text-gray-500 italic">No history available for this document yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

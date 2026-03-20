@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block page_title %}Sales Pipeline{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Opportunities Board</h2>
+        <p class="text-sm text-gray-500 mt-1">Track and convert leads into sales.</p>
+    </div>
+    
+    {% if perms.crm.add_opportunity %}
+    <a href="{% url 'opportunity_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition flex items-center whitespace-nowrap">
+        <i class="fa-solid fa-plus mr-2"></i> New Lead
+    </a>
+    {% endif %}
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-4 mb-6">
+    <form method="GET" class="flex flex-wrap w-full gap-2 items-center">
+        
+        <div class="relative flex-grow md:w-64">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+            </div>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search Deal, Customer, ID..." 
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+        </div>
+        
+        <select name="sort" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <option value="-date_created" {% if sort_by == '-date_created' %}selected{% endif %}>Newest First</option>
+            <option value="-expected_revenue" {% if sort_by == '-expected_revenue' %}selected{% endif %}>Highest Value First</option>
+            <option value="-probability" {% if sort_by == '-probability' %}selected{% endif %}>Highest Probability</option>
+            <option value="date_created" {% if sort_by == 'date_created' %}selected{% endif %}>Oldest First</option>
+        </select>
+        
+        <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition border border-gray-200 shadow-sm">
+            Filter Board
+        </button>
+        
+        {% if query or sort_by != '-date_created' %}
+            <a href="{% url 'opportunity_board' %}" class="flex items-center text-red-500 hover:text-red-700 text-sm font-medium ml-2">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+    
+    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 min-h-[500px]">
+        <h3 class="font-bold text-gray-700 mb-4 flex justify-between items-center">
+            <span class="uppercase text-xs tracking-wider">New Leads</span>
+            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">{{ new_opps.count }}</span>
+        </h3>
+        <div class="space-y-3">
+            {% for opp in new_opps %}
+            <div onclick="window.location='{% url 'opportunity_detail' opp.opp_id %}'" class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:border-blue-400 hover:shadow-md transition group border-l-4 border-l-blue-400">
+                <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">{{ opp.title }}</h4>
+                <p class="text-xs text-gray-500 mt-1">{{ opp.customer.name }}</p>
+                <div class="mt-3 flex justify-between items-center text-xs font-bold">
+                    <span class="text-green-600">${{ opp.expected_revenue|floatformat:2 }}</span>
+                    <span class="text-blue-500 bg-blue-50 px-2 py-1 rounded">{{ opp.probability }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 min-h-[500px]">
+        <h3 class="font-bold text-blue-900 mb-4 flex justify-between items-center">
+            <span class="uppercase text-xs tracking-wider">Qualified</span>
+            <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs">{{ qual_opps.count }}</span>
+        </h3>
+        <div class="space-y-3">
+            {% for opp in qual_opps %}
+            <div onclick="window.location='{% url 'opportunity_detail' opp.opp_id %}'" class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:border-blue-500 hover:shadow-md transition group border-l-4 border-l-orange-400">
+                <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">{{ opp.title }}</h4>
+                <p class="text-xs text-gray-500 mt-1">{{ opp.customer.name }}</p>
+                <div class="mt-3 flex justify-between items-center text-xs font-bold">
+                    <span class="text-green-600">${{ opp.expected_revenue|floatformat:2 }}</span>
+                    <span class="text-orange-500 bg-orange-50 px-2 py-1 rounded">{{ opp.probability }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-green-50 rounded-xl p-4 border border-green-200 min-h-[500px]">
+        <h3 class="font-bold text-green-900 mb-4 flex justify-between items-center">
+            <span class="uppercase text-xs tracking-wider">Won</span>
+            <span class="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs">{{ won_opps.count }}</span>
+        </h3>
+        <div class="space-y-3">
+            {% for opp in won_opps %}
+            <div onclick="window.location='{% url 'opportunity_detail' opp.opp_id %}'" class="bg-white p-4 rounded-lg shadow-sm border border-green-300 cursor-pointer hover:shadow-md transition group border-l-4 border-l-green-500">
+                <h4 class="font-bold text-gray-800 text-sm group-hover:text-green-600 transition">{{ opp.title }}</h4>
+                <p class="text-xs text-gray-500 mt-1">{{ opp.customer.name }}</p>
+                <div class="mt-3 flex justify-between items-center text-xs font-bold">
+                    <span class="text-green-600">${{ opp.expected_revenue|floatformat:2 }}</span>
+                    {% if opp.sales_order %}
+                        <span class="text-green-700 bg-green-100 px-2 py-1 rounded"><i class="fa-solid fa-check mr-1"></i> Ordered</span>
+                    {% else %}
+                        <span class="text-red-600 bg-red-100 px-2 py-1 rounded text-[10px] uppercase">Needs Conversion</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-gray-100 rounded-xl p-4 border border-gray-300 min-h-[500px] opacity-75">
+        <h3 class="font-bold text-gray-600 mb-4 flex justify-between items-center">
+            <span class="uppercase text-xs tracking-wider">Lost</span>
+            <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded-full text-xs">{{ lost_opps.count }}</span>
+        </h3>
+        <div class="space-y-3">
+            {% for opp in lost_opps %}
+            <div onclick="window.location='{% url 'opportunity_detail' opp.opp_id %}'" class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition">
+                <h4 class="font-bold text-gray-500 text-sm line-through">{{ opp.title }}</h4>
+                <p class="text-xs text-gray-400 mt-1">{{ opp.customer.name }}</p>
+                <div class="mt-3 flex justify-between items-center text-xs font-bold text-gray-400">
+                    <span>${{ opp.expected_revenue|floatformat:2 }}</span>
+                    <span>0%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
