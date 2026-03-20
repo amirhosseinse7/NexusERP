@@ -2,7 +2,8 @@
 
 NexusERP is a comprehensive, production-ready Enterprise Resource Planning (ERP) system built with Django. It features a complete Multi-Tenant SaaS architecture, Double-Entry Accounting, Background Task Queues, and a secure RESTful API.
 
-<img width="1919" height="2071" alt="NexusERP" src="https://github.com/user-attachments/assets/2c4fa17b-c311-4161-b5a0-e8fca0a9b6cd" />
+<img width="1919" height="993" alt="NexusERP" src="https://github.com/user-attachments/assets/418c74a9-c263-409b-8bf4-039f9b4c31af" />
+
 
 
 ## 🚀 Core Architecture & Features
