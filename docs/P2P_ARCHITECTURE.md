@@ -13,6 +13,7 @@ The macro process maps the lifecycle of purchasing external inventory. It demons
 
 ### Macro Flowchart (Mermaid)
 ```mermaid
+flowchart TD
     classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
     subgraph Procurement ["🛒 Procurement (Purchasing)"]
