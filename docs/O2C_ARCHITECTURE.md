@@ -15,10 +15,7 @@ The macro process maps the user journey from an Opportunity to a Paid Invoice. I
 ### Macro Flowchart (Mermaid)
 ```mermaid
 flowchart TD
-    classDef startEvent fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    classDef endEvent fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
-    classDef systemTask fill:#e2e3e5,stroke:#383d41,stroke-width:1px,stroke-dasharray: 5 5;
-    classDef gateway fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
+    classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
     subgraph Commerce ["Commerce (Sales)"]
         direction TB
@@ -70,7 +67,7 @@ sequenceDiagram
     User->>View: Clicks "Post Invoice"
     View->>Model: Call invoice.post()
     
-    rect rgb(240, 248, 255)
+    rect rgba(128, 128, 128, 0.15)
         Note over Model, GL: Atomic Database Transaction
         Model->>Model: Change state to 'Posted'
         Model->>GL: Trigger GL Generation
