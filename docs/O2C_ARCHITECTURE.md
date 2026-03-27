@@ -20,7 +20,7 @@ flowchart TD
     classDef systemTask fill:#e2e3e5,stroke:#383d41,stroke-width:1px,stroke-dasharray: 5 5;
     classDef gateway fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
 
-    subgraph Commerce ["🛒 Commerce (Sales)"]
+    subgraph Commerce ["Commerce (Sales)"]
         direction TB
         Start((Opportunity Won)):::startEvent --> Draft[Create Sales Order]
         Draft --> Lines[Add Material & Qty]
@@ -29,7 +29,7 @@ flowchart TD
         GateConfirm -- Yes --> Confirm[Confirm Order]
     end
 
-    subgraph Logistics ["📦 Logistics (Warehouse)"]
+    subgraph Logistics ["Logistics (Warehouse)"]
         direction TB
         Confirm --> Reserve[System: Auto-Reserve Stock]:::systemTask
         Reserve --> Ship[Ship Goods to Customer]
@@ -38,7 +38,7 @@ flowchart TD
         Return --> RMA(((RMA Logged))):::endEvent
     end
 
-    subgraph Finance ["💵 Finance (Accounting)"]
+    subgraph Finance ["Finance (Accounting)"]
         direction TB
         GateDelivery -- Yes --> Invoice[Create Outbound Invoice]
         Invoice --> Post[Post to Ledger]
@@ -46,29 +46,21 @@ flowchart TD
         Journal --> Payment[Register Bank/Cash Payment]
         Payment --> Paid(((Order Paid))):::endEvent
     end
-
-##  2. Micro Process (Level 2: Automated GL Posting)
-
+```        
+## 2. Micro Process (Level 2: Automated GL Posting)
 This micro-process details the exact system logic that executes during the Post to Ledger step in the Finance swimlane. It demonstrates the transactional integrity of the Double-Entry Accounting engine.
 
 ### Process Description:
 When a user clicks "Post Invoice," the system must guarantee that Debits equal Credits before committing to the PostgreSQL database.
-
-1.The invoice.post() method is called.
-2. Database Transaction (transaction.atomic) is opened to prevent partial data writes if a failure occurs.
-3.The system queries the financial_reports logic to identify the correct Revenue (Credit) and Accounts Receivable (Debit) accounts.
-4.The engine verifies Total Debits == Total Credits.
-5.If unbalanced, a ValidationError triggers a rollback. If balanced, the commit succeeds.
+1. The `invoice.post()` method is called.
+2. A Database Transaction `transaction.atomic` is opened to prevent partial data writes if a failure occurs.
+3. The system queries the `financial_reports` logic to identify the correct Revenue (Credit) and Accounts Receivable (Debit) accounts.
+4. The engine verifies `Total Debits == Total Credits`.
+5. If unbalanced, a `ValidationError` triggers a rollback. If balanced, the commit succeeds.
 
 ### Micro System Sequence (Mermaid)
 ```mermaid
-flowchart TD
-    classDef startEvent fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    classDef endEvent fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
-    classDef systemTask fill:#e2e3e5,stroke:#383d41,stroke-width:1px,stroke-dasharray: 5 5;
-    classDef gateway fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
-    
-    sequenceDiagram
+sequenceDiagram
     participant User
     participant View as views.py
     participant Model as Invoice Model
@@ -95,3 +87,4 @@ flowchart TD
     Model->>DB: Commit Transaction
     DB-->>View: Return HTTP 302 Redirect
     View-->>User: Refresh Page (Status: Posted)
+```
