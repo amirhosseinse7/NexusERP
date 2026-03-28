@@ -16,13 +16,13 @@ The macro process maps the lifecycle of a Manufacturing Order (MO). It demonstra
 flowchart TD
     classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
-    subgraph Planning ["📋 Production Planning"]
+    subgraph Planning ["Production Planning"]
         direction TB
         Start((Production Demand)) --> CreateMO[Create Manufacturing Order]
         CreateMO --> SelectBOM[Select Bill of Materials]
     end
 
-    subgraph Warehouse ["🏭 Shop Floor & Inventory"]
+    subgraph Warehouse ["Shop Floor & Inventory"]
         direction TB
         SelectBOM --> CheckStock{Components Available?}
         CheckStock -- No --> Shortage(((Trigger P2P Process)))

@@ -7,9 +7,7 @@ This diagram illustrates the macro-level data flow across the entire ERP platfor
 
 ```mermaid
 flowchart TD
-    classDef saas stroke-width:3px,stroke:#10b981,stroke-dasharray: 5 5;
-    classDef module stroke-width:2px,stroke:#3b82f6;
-    classDef finance stroke-width:2px,stroke:#8b5cf6;
+    classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
     subgraph SaaS ["Global SaaS Control Layer"]
         direction TB
@@ -54,14 +52,14 @@ flowchart TD
     classDef endEvent stroke-width:2px,stroke:#dc3545;
     classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
-    subgraph GlobalAdmin ["🌐 SaaS Control Center (Superuser)"]
+    subgraph GlobalAdmin ["SaaS Control Center (Superuser)"]
         direction TB
         Start((Client Signs Up)) --> ProvTenant[Provision New Workspace]
         ProvTenant --> GenAdmin[Generate Initial Tenant Admin]
         GenAdmin --> Isolate[System: Isolate Tenant Database Context]:::systemTask
     end
 
-    subgraph TenantAdmin ["🏢 Workspace Admin (Tenant Level)"]
+    subgraph TenantAdmin ["Workspace Admin (Tenant Level)"]
         direction TB
         Isolate --> ConfigCorp[Configure Company Profile & Domain]
         ConfigCorp --> ConfigSeq[Define Document Sequences]
@@ -83,7 +81,7 @@ This maps the foundational directory processes required before transactional ope
 flowchart TD
     classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
-    subgraph Directory ["📇 Master Data Management"]
+    subgraph Directory ["Master Data Management"]
         direction TB
         CreatePartner[Register Business Partner]
         CreatePartner --> CheckType{Partner Type?}
@@ -91,7 +89,7 @@ flowchart TD
         CheckType -- Supplier --> POReady[Available for Purchasing]:::systemTask
     end
 
-    subgraph HRModule ["👥 Human Resources"]
+    subgraph HRModule ["Human Resources"]
         direction TB
         CreateDept[Establish Departments] --> AddEmp[Onboard Employee]
         AddEmp --> LeaveReq[Employee Submits Time-Off]
