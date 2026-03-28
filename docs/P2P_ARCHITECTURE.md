@@ -16,7 +16,7 @@ The macro process maps the lifecycle of purchasing external inventory. It demons
 flowchart TD
     classDef systemTask stroke-width:2px,stroke-dasharray: 5 5;
 
-    subgraph Procurement ["🛒 Procurement (Purchasing)"]
+    subgraph Procurement ["Procurement (Purchasing)"]
         direction TB
         Start((Stock Shortage)):::startEvent --> DraftPO[Draft Purchase Order]
         DraftPO --> AddLines[Select Supplier & Items]
@@ -74,3 +74,4 @@ flowchart TD
     NextLoop -- No --> GroupPO[Group Lines by Supplier]:::logic
     GroupPO --> SaveDB[(Save to PO Database)]:::db
     SaveDB --> End(((Process Sleep)))
+    ```

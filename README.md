@@ -6,7 +6,7 @@ NexusERP is a comprehensive, production-ready Enterprise Resource Planning (ERP)
 
 
 
-## 🚀 Core Architecture & Features
+## Core Architecture & Features
 
 ### 1. Multi-Tenant SaaS Engine (Row-Level Security)
 Built to host hundreds of isolated companies within a single database instance.
@@ -33,14 +33,14 @@ Built to host hundreds of isolated companies within a single database instance.
 * **RESTful API:** Developed with Django REST Framework (DRF) featuring Token Authentication and tenant-isolated endpoints for external integrations.
 * **Automated Sequences:** Custom sequence generator ensures customizable, auto-incrementing document IDs (e.g., `SO-0001`) with row-level database locking.
 
-## 🛠️ Technology Stack
+## Technology Stack
 * **Backend:** Python, Django 5.x, Django REST Framework
 * **Database:** SQLite (Dev) / PostgreSQL (Production ready)
 * **Message Broker:** Celery, Redis (Eventlet pool for Windows)
 * **Frontend:** TailwindCSS, Alpine.js, FontAwesome
 * **Reporting:** xhtml2pdf, CSV exporters
 
-## ⚙️ Local Development Setup
+## Local Development Setup
 
 1. **Clone the repository:**
    ```bash
@@ -75,8 +75,10 @@ Built to host hundreds of isolated companies within a single database instance.
     Bash
 
     celery -A config worker -l info -P eventlet
+    
+    ```
 
-🔐 System Access (SaaS Admin)
+# System Access (SaaS Admin)
 
 To access the SaaS Super-Admin panel and provision your first workspace, create a global superuser:
 Bash
@@ -86,6 +88,13 @@ python manage.py createsuperuser
 Log in at http://127.0.0.1:8000/saas/ to launch a new tenant.
 
 
-⚖️ License & Copyright
+## System Architecture Documentation
+Detailed BPMN-style process mappings and system architecture documentation can be found in the `/docs` directory:
+* [Master System Map & SaaS Lifecycle](docs/SYSTEM_MAP.md)
+* [Order-to-Cash (O2C) & GL Engine](docs/O2C_ARCHITECTURE.md)
+* [Procure-to-Pay (P2P) & AI Replenishment](docs/P2P_ARCHITECTURE.md)
+* [Make-to-Stock (MRP) & Inventory Engine](docs/MRP_ARCHITECTURE.md)
+# License & Copyright
+
 
 Copyright © 2026. All Rights Reserved. This repository is provided for portfolio and demonstration purposes only. No license is granted to copy, modify, distribute, or use this software for commercial or non-commercial purposes without explicit written permission.
