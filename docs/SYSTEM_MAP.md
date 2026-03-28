@@ -18,7 +18,7 @@ flowchart TD
         direction TB
         
         %% Core Modules
-        CRM[🛒 CRM & Sales]:::module
+        CRM[🛒CRM & Sales]:::module
         Logistics[Logistics & Inventory]:::module
         MRP[Manufacturing]:::module
         HR[Directory & HR]:::module
@@ -101,6 +101,6 @@ flowchart TD
 
 ### 4. Transactional Engines
 For detailed, system-level documentation of the core operational engines, please refer to the following architectural mappings:
-[Order-to-Cash (O2C) & GL Engine](docs/O2C_ARCHITECTURE.md): Details the sales pipeline, stock reservation, and double-entry accounting execution.
-[Procure-to-Pay (P2P) & AI Replenishment](docs/P2P_ARCHITECTURE.md): Details the purchasing lifecycle and the automated background CRON worker.
-[Make-to-Stock (MRP)](docs/MRP_ARCHITECTURE.md):Details the Bill of Materials expansion and atomic multi-stage inventory transactions. Details the Bill of Materials expansion and atomic multi-stage inventory transactions.
+## . [Order-to-Cash (O2C) & GL Engine](docs/O2C_ARCHITECTURE.md): Details the sales pipeline, stock reservation, and double-entry accounting execution.
+## . [Procure-to-Pay (P2P) & AI Replenishment](docs/P2P_ARCHITECTURE.md): Details the purchasing lifecycle and the automated background CRON worker.
+## . [Make-to-Stock (MRP)](docs/MRP_ARCHITECTURE.md):Details the Bill of Materials expansion and atomic multi-stage inventory transactions. Details the Bill of Materials expansion and atomic multi-stage inventory transactions.
